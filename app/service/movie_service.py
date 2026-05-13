@@ -1,17 +1,18 @@
+from sqlmodel import desc, select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from app.schemas.movie import MovieCreate, MovieUpdate, Movie
-from sqlmodel import select, desc
+
+from app.schemas.movie import Movie, MovieCreate, MovieUpdate
 
 
 class MovieService:
     async def get_all_movies(self, session: AsyncSession):
-        exiesting_movies = select(Movie).order_by(desc(Movie.created_at))
-        result = await session.exec(exiesting_movies)
+        stmt = select(Movie).order_by(desc(Movie.created_at))
+        result = await session.exec(stmt)
         return result.all()
 
     async def get_movie(self, movie_uid: str, session: AsyncSession):
-        exiesting_movie = select(Movie).where(Movie.uid == movie_uid)
-        result = await session.exec(exiesting_movie)
+        stmt = select(Movie).where(Movie.uid == movie_uid)
+        result = await session.exec(stmt)
         movie = result.first()
         if movie:
             return movie
@@ -19,11 +20,14 @@ class MovieService:
             return None
 
     async def create_movie(self, movie_data: MovieCreate, session: AsyncSession):
+        stmt = select(Movie).where(Movie.imdb == movie_data.imdb)
+        result = await session.exec(stmt)
+        movie = result.first()
+        if movie:
+            return None
         new_movie = Movie(**movie_data.model_dump())
-        # new_movie.pub
         session.add(new_movie)
         await session.commit()
-        # session.refresh(new_movie)
         return new_movie
 
     async def update_movie(
@@ -34,7 +38,6 @@ class MovieService:
             for field, value in movie_data.model_dump(exclude_unset=True).items():
                 setattr(movie_to_update, field, value)
                 await session.commit()
-                # session.refresh()
             return movie_to_update
         else:
             return None

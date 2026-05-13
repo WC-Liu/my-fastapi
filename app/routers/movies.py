@@ -1,21 +1,24 @@
-from fastapi import APIRouter, status, Depends
+from typing import List
+
+from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
-from ..schemas.movie import Movie, MovieCreate, MovieUpdate
-from app.service.movie_service import movie_service
+
 from app.db.db import get_session
-from typing import List
+from app.service.movie_service import movie_service
+
+from ..schemas.movie import MovieCreate, MovieOutput, MovieUpdate
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[Movie])
+@router.get("/", response_model=List[MovieOutput])
 async def get_movies(session: AsyncSession = Depends(get_session)):
     movies = await movie_service.get_all_movies(session)
     return movies
 
 
-@router.get("/{movie_uid}", response_model=Movie)
+@router.get("/{movie_uid}", response_model=MovieOutput)
 async def get_movie(movie_uid: str, session: AsyncSession = Depends(get_session)):
     movie = await movie_service.get_movie(movie_uid, session)
     if movie:
@@ -24,15 +27,19 @@ async def get_movie(movie_uid: str, session: AsyncSession = Depends(get_session)
         raise HTTPException(status_code=404, detail=f"电影 ID {movie_uid} 不存在")
 
 
-@router.post("/", response_model=Movie, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=MovieOutput, status_code=status.HTTP_201_CREATED)
 async def create_movie(
     movie_data: MovieCreate, session: AsyncSession = Depends(get_session)
 ):
     new_movie = await movie_service.create_movie(movie_data, session)
+    if not new_movie:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="电影已存在"
+        )
     return new_movie
 
 
-@router.patch("/{movie_uid}", response_model=Movie)
+@router.patch("/{movie_uid}", response_model=MovieOutput)
 async def update_movie(
     movie_uid: str,
     movie_update: MovieUpdate,
@@ -49,6 +56,6 @@ async def update_movie(
 async def delete_movie(movie_uid: str, session: AsyncSession = Depends(get_session)):
     deleted_movie = await movie_service.delete_movie(movie_uid, session)
     if deleted_movie:
-        return "用户已经删除"
+        return {}
     else:
         raise HTTPException(status_code=404, detail=f"电影 ID {movie_uid} 不存在")
