@@ -3,9 +3,9 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
+from app.schemas.user import User
 
 async_engine = AsyncEngine(create_engine(url=settings.DATABASE_URL, echo=True))
-
 
 async def init_db() -> None:
     async with async_engine.begin() as conn:

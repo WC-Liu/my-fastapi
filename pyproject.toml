@@ -5,8 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.18.4",
     "asyncpg>=0.31.0",
     "fastapi[standard]>=0.136.1",
+    "passlib>=1.7.4",
     "pydantic-settings>=2.14.1",
     "sqlmodel>=0.0.38",
 ]
@@ -15,3 +17,23 @@ dependencies = [
 dev = [
     "ruff>=0.15.12",
 ]
+
+[tool.ruff]
+# 行长度限制（与 Black 默认保持一致）
+line-length = 88
+
+# 排除目录
+exclude = [
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "__pycache__",
+    ".git",
+    ".ruff_cache",
+    "tests/fixtures",
+]
+
+
+[tool.ruff.lint]
+ignore = ["F401"]
