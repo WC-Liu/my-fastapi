@@ -2,8 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-import sqlalchemy.dialects.postgresql as pg
-from sqlmodel import Column, Field, SQLModel
+from sqlmodel import Field, SQLModel
 
 
 # 公共字段
@@ -15,18 +14,6 @@ class MovieBase(SQLModel):
     genre: str
     is_showing: bool = Field(default=False)
     imdb: str
-
-
-# 数据库模型
-class Movie(MovieBase, table=True):
-    __tablename__ = "movies"
-    uid: uuid.UUID = Field(
-        sa_column=Column(pg.UUID, default=uuid.uuid4, primary_key=True, nullable=False)
-    )
-    created_at: datetime = Field(sa_column=Column(pg.TIMESTAMP, default=datetime.now))
-    updated_at: datetime = Field(
-        sa_column=Column(pg.TIMESTAMP, default=datetime.now, onupdate=datetime.now)
-    )
 
 
 # 创建请求

@@ -2,9 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.db.db import init_db
-
-from .routers import movies, users
+from .routers import auth, movies
 
 
 @asynccontextmanager
@@ -18,4 +16,4 @@ async def life_span(app: FastAPI):
 app = FastAPI(lifespan=life_span)
 
 app.include_router(movies.router, prefix="/movies", tags=["电影"])
-app.include_router(users.router, prefix="/users", tags=["用户"])
+app.include_router(auth.router, prefix="/auth", tags=["用户"])

@@ -1,7 +1,8 @@
 from sqlmodel import desc, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.schemas.movie import Movie, MovieCreate, MovieUpdate
+from app.models.movie import Movie
+from app.schemas.movie import MovieCreate, MovieUpdate
 
 
 class MovieService:
