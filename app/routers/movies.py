@@ -10,7 +10,7 @@ from app.service.movie_service import movie_service
 
 from ..schemas.movie import MovieCreate, MovieOutput, MovieUpdate
 
-access_token_bearer = AccessTokenBearer
+access_token_bearer = AccessTokenBearer()
 rolechecker = RoleChecker(["admin", "user"])
 router = APIRouter(dependencies=[Depends(rolechecker)])
 
@@ -18,10 +18,19 @@ router = APIRouter(dependencies=[Depends(rolechecker)])
 @router.get("/", response_model=List[MovieOutput])
 async def get_movies(
     session: AsyncSession = Depends(get_session),
-    user_details=Depends(access_token_bearer),
+    token_details: dict = Depends(access_token_bearer),
 ):
-    print(user_details)
     movies = await movie_service.get_all_movies(session)
+    return movies
+
+
+@router.get("/user/{user_uid}", response_model=List[MovieOutput])
+async def get_user_movie_sub(
+    user_uid: str,
+    session: AsyncSession = Depends(get_session),
+    token_dedails: dict = Depends(access_token_bearer),
+):
+    movies = await movie_service.get_user_movies(user_uid, session)
     return movies
 
 
@@ -29,7 +38,7 @@ async def get_movies(
 async def get_movie(
     movie_uid: str,
     session: AsyncSession = Depends(get_session),
-    user_details=Depends(access_token_bearer),
+    token_details: dict = Depends(access_token_bearer),
 ):
     movie = await movie_service.get_movie(movie_uid, session)
     if movie:
@@ -46,9 +55,10 @@ async def get_movie(
 async def create_movie(
     movie_data: MovieCreate,
     session: AsyncSession = Depends(get_session),
-    user_details=Depends(access_token_bearer),
-):
-    new_movie = await movie_service.create_movie(movie_data, session)
+    token_details: dict = Depends(access_token_bearer),
+) -> dict:
+    user_id = token_details.get("user")["user_uid"]
+    new_movie = await movie_service.create_movie(movie_data, user_id, session)
     if not new_movie:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="电影已存在"
@@ -61,7 +71,7 @@ async def update_movie(
     movie_uid: str,
     movie_update: MovieUpdate,
     session: AsyncSession = Depends(get_session),
-    user_details=Depends(access_token_bearer),
+    token_details: dict = Depends(access_token_bearer),
 ):
     updated_movie = await movie_service.update_movie(movie_uid, movie_update, session)
     if updated_movie:
@@ -74,7 +84,7 @@ async def update_movie(
 async def delete_movie(
     movie_uid: str,
     session: AsyncSession = Depends(get_session),
-    user_details=Depends(access_token_bearer),
+    token_details: dict = Depends(access_token_bearer),
 ):
     deleted_movie = await movie_service.delete_movie(movie_uid, session)
     if deleted_movie:

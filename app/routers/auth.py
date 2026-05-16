@@ -13,7 +13,7 @@ from app.core.dependencies import (
 from app.core.security import create_access_token
 from app.db.db import get_session
 from app.db.redis import add_jti_to_blacklist
-from app.schemas.auth import UserCreate, UserLogging, UserOutput
+from app.schemas.auth import UserCreate, UserLogging, UserMoviesOutput, UserOutput
 from app.service.auth_service import user_service
 
 REFRESH_TOKEN_EXPIRY = 2
@@ -66,7 +66,7 @@ async def get_new_access_token(token_details: dict = Depends(refreshtokenbearer)
     )
 
 
-@router.get("/me", response_model=UserOutput)
+@router.get("/me", response_model=UserMoviesOutput)
 async def get_current_user(
     user=Depends(get_current_user), _: bool = Depends(rolechecker)
 ):

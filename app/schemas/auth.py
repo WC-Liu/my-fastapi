@@ -1,7 +1,10 @@
 import uuid
 from datetime import datetime
+from typing import List
 
 from sqlmodel import Field, SQLModel
+
+from app.schemas.movie import MovieOutput
 
 
 class Token(SQLModel):
@@ -25,15 +28,19 @@ class UserCreate(SQLModel):
 class UserOutput(SQLModel):
     uid: uuid.UUID
     username: str
-    # password_hashed: str = Field(exclude=True)
     email: str
     name: str
     is_verified: bool
     created_at: datetime
     updated_at: datetime
+    # movies: List[MovieOutput]
     model_config = {
         "json_encoders": {datetime: lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S")}
     }
+
+
+class UserMoviesOutput(UserOutput):
+    movies: List[MovieOutput]
 
 
 # 用户登陆模型

@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
+from typing import List
 
 import sqlalchemy.dialects.postgresql as pg
-from sqlmodel import Column, Field, SQLModel
+from sqlmodel import Column, Field, Relationship, SQLModel
 
 
 # 数据库模型
@@ -26,3 +27,6 @@ class User(SQLModel, table=True):
     model_config = {
         "json_encoders": {datetime: lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S")}
     }
+    movies: List["Movie"] = Relationship(
+        back_populates="user", sa_relationship_kwargs={"lazy": "selectin"}
+    )
