@@ -14,10 +14,12 @@ from app.core.security import create_access_token
 from app.db.db import get_session
 from app.db.redis import add_jti_to_blacklist
 from app.schemas.auth import UserCreate, UserLogging, UserMoviesOutput, UserOutput
-from app.service.auth_service import user_service
+from app.service.auth_service import auth_service
+from app.service.user_service import user_service
 
+# 刷新令牌过期时间
 REFRESH_TOKEN_EXPIRY = 2
-rolechecker = RoleChecker(["admin", "user"])
+rolechecker = RoleChecker(["admin"])
 access_token_bearer = AccessTokenBearer()
 refreshtokenbearer = RefreshTokenBearer()
 
@@ -25,52 +27,29 @@ router = APIRouter()
 
 
 # 创建新用户
-@router.post("/signup", response_model=UserOutput, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", response_model=UserOutput, status_code=status.HTTP_201_CREATED
+)
 async def create_user(
     user_data: UserCreate, session: AsyncSession = Depends(get_session)
 ):
-    email = user_data.email
-    user_exiests = await user_service.user_exiests(email, session)
-
-    if user_exiests:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="用户已经存在"
-        )
-    new_user = await user_service.create_user(user_data, session)
-
+    new_user = await auth_service.create_user(user_data, session)
     return new_user
 
 
-# 登陆
+# 用户登陆
 @router.post("/login")
 async def login_user(
     login_data: UserLogging, session: AsyncSession = Depends(get_session)
 ):
-    result = await user_service.login_user(login_data, session)
-    if result is None:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="email错误或者password错误"
-        )
+    result = await auth_service.login_user(login_data, session)
     return result
 
 
 # 刷新令牌
 @router.get("/refresh")
 async def get_new_access_token(token_details: dict = Depends(refreshtokenbearer)):
-    expiry_timestamp = token_details["exp"]
-    if datetime.fromtimestamp(expiry_timestamp) > datetime.now():
-        new_access_token = create_access_token(user_data=token_details["user"])
-        return JSONResponse(content={"access_token": new_access_token})
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST, detail="错误或者过期令牌"
-    )
-
-
-@router.get("/me", response_model=UserMoviesOutput)
-async def get_current_user(
-    user=Depends(get_current_user), _: bool = Depends(rolechecker)
-):
-    return user
+    return await auth_service.refresh_access_token(token_details)
 
 
 # 退出登录
@@ -85,3 +64,10 @@ async def revooke_token(token_details: dict = Depends(access_token_bearer)):
         },
         status_code=status.HTTP_200_OK,
     )
+
+
+@router.get("/me", response_model=UserMoviesOutput)
+async def get_current_user(
+    user=Depends(get_current_user), _: bool = Depends(rolechecker)
+):
+    return user

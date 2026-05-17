@@ -10,6 +10,7 @@ from app.db.db import get_session
 from app.db.redis import token_in_blacklist
 from app.models.user import User
 from app.service.auth_service import user_service
+from app.utils import exceptions
 
 from .security import decode_token
 
@@ -28,15 +29,9 @@ class TokenBearer(HTTPBearer):
         token_data = decode_token(token)
 
         if not self.token_valid(token):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={"error": "此令牌无效或者错误", "resolution": "请提供新令牌"},
-            )
+            raise exceptions.InvalidTokenError()
         if await token_in_blacklist(token_data["jti"]):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={"error": "此令牌无效或者注销", "resolution": "请提供新令牌"},
-            )
+            raise exceptions.InvalidTokenError()
 
         self.verify_token_data(token_data)
         return token_data
@@ -55,17 +50,13 @@ class TokenBearer(HTTPBearer):
 class AccessTokenBearer(TokenBearer):
     def verify_token_data(self, token_data: dict):
         if token_data and token_data["refresh"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="请提供一个访问令牌"
-            )
+            raise exceptions.AccessTokenRequired()
 
 
 class RefreshTokenBearer(TokenBearer):
     def verify_token_data(self, token_data: dict):
         if token_data and not token_data["refresh"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="请提供一个刷新令牌"
-            )
+            raise exceptions.RefreshTokenRequired()
 
 
 async def get_current_user(
@@ -85,6 +76,4 @@ class RoleChecker:
         if current_user.role in self.allowed_roles:
             return True
 
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="您不被允许执行此操作"
-        )
+        raise exceptions.PermissionDeniedError()

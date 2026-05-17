@@ -9,6 +9,7 @@ from sqlmodel import SQLModel
 
 from app.core.config import settings
 from app.models.movie import Movie
+from app.models.review import Review
 from app.models.user import User
 
 # this is the Alembic Config object, which provides

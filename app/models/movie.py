@@ -1,13 +1,12 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 import sqlalchemy.dialects.postgresql as pg
 from sqlmodel import Column, Field, Relationship, SQLModel
 
-# from .user import User
 
-
+# 电影数据库模型
 class Movie(SQLModel, table=True):
     __tablename__ = "movies"
     uid: uuid.UUID = Field(
@@ -26,3 +25,10 @@ class Movie(SQLModel, table=True):
         sa_column=Column(pg.TIMESTAMP, default=datetime.now, onupdate=datetime.now)
     )
     user: Optional["User"] = Relationship(back_populates="movies")
+    reviews: List["Review"] = Relationship(
+        back_populates="movie", sa_relationship_kwargs={"lazy": "selectin"}
+    )
+
+    model_config = {
+        "json_encoders": {datetime: lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S")}
+    }
