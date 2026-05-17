@@ -4,7 +4,6 @@ from sqlmodel import create_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
-from app.models.user import User
 
 # 创建数据库引擎
 async_engine = AsyncEngine(create_engine(url=settings.DATABASE_URL, echo=True))

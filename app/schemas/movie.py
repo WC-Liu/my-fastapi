@@ -1,8 +1,10 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from sqlmodel import Field, SQLModel
+
+from .review import ReviewOutput
 
 
 # 公共字段
@@ -44,7 +46,4 @@ class MovieOutput(SQLModel):
     user_id: uuid.UUID | None = None
     created_at: datetime
     updated_at: datetime
-
-
-def __repr__(self):
-    return f"<Movie {self.title}>"
+    reviews: List[ReviewOutput]

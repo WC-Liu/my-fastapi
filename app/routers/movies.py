@@ -15,6 +15,7 @@ rolechecker = RoleChecker(["admin", "user"])
 router = APIRouter(dependencies=[Depends(rolechecker)])
 
 
+# 获取所有电影
 @router.get("/", response_model=List[MovieOutput])
 async def get_movies(
     session: AsyncSession = Depends(get_session),
@@ -24,16 +25,7 @@ async def get_movies(
     return movies
 
 
-@router.get("/user/{user_uid}", response_model=List[MovieOutput])
-async def get_user_movie_sub(
-    user_uid: str,
-    session: AsyncSession = Depends(get_session),
-    token_dedails: dict = Depends(access_token_bearer),
-):
-    movies = await movie_service.get_user_movies(user_uid, session)
-    return movies
-
-
+# 获取某部电影
 @router.get("/{movie_uid}", response_model=MovieOutput)
 async def get_movie(
     movie_uid: str,
@@ -47,6 +39,7 @@ async def get_movie(
         raise HTTPException(status_code=404, detail=f"电影 ID {movie_uid} 不存在")
 
 
+# 创建电影
 @router.post(
     "/",
     response_model=MovieOutput,
@@ -66,6 +59,7 @@ async def create_movie(
     return new_movie
 
 
+# 更新电影信息
 @router.patch("/{movie_uid}", response_model=MovieOutput)
 async def update_movie(
     movie_uid: str,
@@ -80,6 +74,7 @@ async def update_movie(
         raise HTTPException(status_code=404, detail=f"电影 id{movie_uid}不存在")
 
 
+# 删除电影
 @router.delete("/{movie_uid}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_movie(
     movie_uid: str,

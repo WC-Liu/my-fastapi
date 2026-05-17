@@ -7,15 +7,6 @@ from sqlmodel import Field, SQLModel
 from app.schemas.movie import MovieOutput
 
 
-class Token(SQLModel):
-    access_token: str
-    token_type: str
-
-
-class TokenData(SQLModel):
-    email: str | None = None
-
-
 # 用户创建模型
 class UserCreate(SQLModel):
     username: str = Field(max_length=10)
@@ -41,6 +32,11 @@ class UserOutput(SQLModel):
 
 class UserMoviesOutput(UserOutput):
     movies: List[MovieOutput]
+
+
+class UserUpdate(SQLModel):
+    username: str = Field(max_length=10)
+    name: str = Field(max_length=20)
 
 
 # 用户登陆模型

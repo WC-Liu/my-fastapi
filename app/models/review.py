@@ -1,35 +1,27 @@
 import uuid
 from datetime import datetime
-from typing import List
+from typing import Optional
 
 import sqlalchemy.dialects.postgresql as pg
 from sqlmodel import Column, Field, Relationship, SQLModel
 
 
-# 用户数据库模型
-class User(SQLModel, table=True):
-    __tablename__ = "users"
+# 电影评论数据库表
+class Review(SQLModel, table=True):
+    __tablename__ = "reviews"
     uid: uuid.UUID = Field(
         sa_column=Column(pg.UUID, default=uuid.uuid4, primary_key=True, nullable=False)
     )
-    username: str
-    password_hashed: str = Field(exclude=True)
-    email: str
-    name: str
-    role: str = Field(
-        sa_column=Column(pg.VARCHAR, nullable=False, server_default="user")
-    )
-    is_verified: bool = False
+    rating: float = Field(ge=0, le=10)
+    review_text: str
+    user_id: Optional[uuid.UUID] = Field(default=None, foreign_key="users.uid")
+    movie_id: Optional[uuid.UUID] = Field(default=None, foreign_key="movies.uid")
     created_at: datetime = Field(sa_column=Column(pg.TIMESTAMP, default=datetime.now))
     updated_at: datetime = Field(
         sa_column=Column(pg.TIMESTAMP, default=datetime.now, onupdate=datetime.now)
     )
-    movies: List["Movie"] = Relationship(
-        back_populates="user", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    reviews: List["Review"] = Relationship(
-        back_populates="user", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    user: Optional["User"] = Relationship(back_populates="reviews")
+    movie: Optional["Movie"] = Relationship(back_populates="reviews")
 
     model_config = {
         "json_encoders": {datetime: lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S")}

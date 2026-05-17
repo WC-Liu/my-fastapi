@@ -9,6 +9,7 @@ from .config import settings
 
 passwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ACCESS_TOKEN_EXPIRY = 1
+DUMMY_HASH = passwd_context.hash("dummypassword")
 
 
 # 对用户密码hash加密

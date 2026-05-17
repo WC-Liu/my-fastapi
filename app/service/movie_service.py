@@ -11,15 +11,6 @@ class MovieService:
         result = await session.exec(stmt)
         return result.all()
 
-    async def get_user_movies(self, user_uid: str, session: AsyncSession):
-        stmt = (
-            select(Movie)
-            .where(Movie.user_id == user_uid)
-            .order_by(desc(Movie.created_at))
-        )
-        result = await session.exec(stmt)
-        return result.all()
-
     async def get_movie(self, movie_uid: str, session: AsyncSession):
         stmt = select(Movie).where(Movie.uid == movie_uid)
         result = await session.exec(stmt)
