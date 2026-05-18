@@ -19,7 +19,7 @@ from app.service.user_service import user_service
 
 # 刷新令牌过期时间
 REFRESH_TOKEN_EXPIRY = 2
-rolechecker = RoleChecker(["admin"])
+rolechecker = RoleChecker(["admin", "user"])
 access_token_bearer = AccessTokenBearer()
 refreshtokenbearer = RefreshTokenBearer()
 

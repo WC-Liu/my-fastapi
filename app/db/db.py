@@ -6,7 +6,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.config import settings
 
 # 创建数据库引擎
-async_engine = AsyncEngine(create_engine(url=settings.DATABASE_URL, echo=True))
+async_engine = AsyncEngine(create_engine(url=settings.DATABASE_URL, echo=False))
 
 
 # 创建会话工厂
