@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import jwt
+from itsdangerous import URLSafeTimedSerializer
 from passlib.context import CryptContext
 
 from .config import settings
@@ -12,19 +13,18 @@ ACCESS_TOKEN_EXPIRY = 1
 DUMMY_HASH = passwd_context.hash("dummypassword")
 
 
-# 对用户密码hash加密
+# -------------------1. 用户密码hash功能块------------------
 def generate_passwd_hash(password: str) -> str:
     hash = passwd_context.hash(password)
 
     return hash
 
 
-# 用户登录时输入密码和数据库hash密码比对
 def verify_password(password: str, hash: str) -> bool:
     return passwd_context.verify(password, hash)
 
 
-# 创建访问令牌，用户数据、过期时间、是否刷新
+# -------------------2. JWT功能块------------------
 def create_access_token(
     user_data: dict, expiry: timedelta = None, refresh: bool = False
 ):
@@ -37,13 +37,11 @@ def create_access_token(
         "jti": str(uuid.uuid4()),
         "refresh": refresh,
     }
-    # 编码token，包含payload定义的所有信息
     return jwt.encode(
         payload=payload, key=settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHMA
     )
 
 
-# 解码token，使其可以获取payload信息
 def decode_token(token: str) -> dict:
     try:
         token_data = jwt.decode(
@@ -56,3 +54,22 @@ def decode_token(token: str) -> dict:
     except jwt.InvalidTokenError as e:
         logging.warning(f"错误的token：{e}")
         return None
+
+
+# -------------------3. 邮箱验证功能块------------------
+serializer = URLSafeTimedSerializer(
+    secret_key=settings.JWT_SECRET, salt="email-configuration"
+)
+
+
+def create_url_safe_token(data: dict):
+    token = serializer.dumps(data)
+    return token
+
+
+def decode_url_safe_token(token: str):
+    try:
+        token_data = serializer.loads(token)
+        return token_data
+    except Exception as e:
+        logging.error(str(e))

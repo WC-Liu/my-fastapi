@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 from fastapi.responses import JSONResponse
-from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.security import (
@@ -41,7 +40,7 @@ class AuthService:
             verify_password(password, DUMMY_HASH)
             raise exceptions.UserNotFoundError()
         if not verify_password(password, user.password_hashed):
-            return exceptions.InvalidPasswordError()
+            raise exceptions.InvalidPasswordError()
         access_token = create_access_token(
             user_data={
                 "email": user.email,

@@ -1,6 +1,4 @@
-from datetime import datetime, timedelta
-
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -10,12 +8,17 @@ from app.core.dependencies import (
     RoleChecker,
     get_current_user,
 )
-from app.core.security import create_access_token
 from app.db.db import get_session
 from app.db.redis import add_jti_to_blacklist
-from app.schemas.auth import UserCreate, UserLogging, UserMoviesOutput, UserOutput
+from app.schemas.auth import (
+    Email,
+    UserCreate,
+    UserLogging,
+    UserMoviesOutput,
+    UserOutput,
+)
 from app.service.auth_service import auth_service
-from app.service.user_service import user_service
+from app.service.mail_service import mail_service
 
 # 刷新令牌过期时间
 REFRESH_TOKEN_EXPIRY = 2
@@ -27,14 +30,22 @@ router = APIRouter()
 
 
 # 创建新用户
-@router.post(
-    "/register", response_model=UserOutput, status_code=status.HTTP_201_CREATED
-)
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_data: UserCreate, session: AsyncSession = Depends(get_session)
 ):
     new_user = await auth_service.create_user(user_data, session)
-    return new_user
+
+    await mail_service.send_verify_email(user_data.email, session)
+
+    return {"message": "账号已创建", "user": new_user}
+
+
+@router.get("/verify/{email_token}")
+async def verify_user_account(
+    email_token: str, session: AsyncSession = Depends(get_session)
+):
+    return await mail_service.verified_user(email_token, {"is_verified": True}, session)
 
 
 # 用户登陆

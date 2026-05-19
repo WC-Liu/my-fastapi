@@ -43,3 +43,7 @@ class UserUpdate(SQLModel):
 class UserLogging(SQLModel):
     email: str = Field(max_length=40)
     password: str = Field(min_length=6)
+
+
+class Email(SQLModel):
+    emails: List[str]

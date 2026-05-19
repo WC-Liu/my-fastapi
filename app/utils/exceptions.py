@@ -56,6 +56,10 @@ class MovieAlreadyExistsError(Exception):
     pass
 
 
+class MailServiceError(Exception):
+    pass
+
+
 # 创建异常处理闭包工厂
 def create_exception_handler(status_code: int, detail: Any):
     async def handler(request: Request, exc: Exception):
@@ -76,6 +80,7 @@ def register_exception_handler(app: FastAPI):
         AccessTokenRequired: (401, "请提供一个token"),
         RefreshTokenRequired: (401, "请提供一个刷新token"),
         MovieNotFoundError: (404, "电影不存在"),
+        MailServiceError: (500, "邮件发送失败"),
     }
     for exc, (code, msg) in handlers.items():
         app.add_exception_handler(exc, create_exception_handler(code, msg))
