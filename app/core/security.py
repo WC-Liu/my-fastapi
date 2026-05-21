@@ -4,20 +4,18 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 from itsdangerous import URLSafeTimedSerializer
-from passlib.context import CryptContext
+from pwdlib import PasswordHash
 
 from .config import settings
 
-passwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+passwd_context = PasswordHash.recommended()
 ACCESS_TOKEN_EXPIRY = 1
 DUMMY_HASH = passwd_context.hash("dummypassword")
 
 
 # -------------------1. 用户密码hash功能块------------------
 def generate_passwd_hash(password: str) -> str:
-    hash = passwd_context.hash(password)
-
-    return hash
+    return passwd_context.hash(password)
 
 
 def verify_password(password: str, hash: str) -> bool:

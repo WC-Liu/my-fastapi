@@ -7,14 +7,21 @@ requires-python = ">=3.12"
 dependencies = [
     "aioredis>=2.0.1",
     "alembic>=1.18.4",
+    "asgiref>=3.11.1",
     "asyncpg>=0.31.0",
+    "bcrypt>=5.0.0",
+    "celery>=5.6.3",
     "fastapi-mail>=1.6.4",
     "fastapi[standard]>=0.136.1",
+    "flower>=2.0.1",
     "itsdangerous>=2.2.0",
     "passlib>=1.7.4",
+    "pwdlib[argon2]>=0.3.0",
     "pydantic-settings>=2.14.1",
     "pyjwt>=2.12.1",
+    "pytest>=9.0.3",
     "redis>=7.4.0",
+    "schemathesis>=4.19.0",
     "sqlmodel>=0.0.38",
 ]
 

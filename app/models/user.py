@@ -30,7 +30,3 @@ class User(SQLModel, table=True):
     reviews: List["Review"] = Relationship(
         back_populates="user", sa_relationship_kwargs={"lazy": "selectin"}
     )
-
-    model_config = {
-        "json_encoders": {datetime: lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S")}
-    }

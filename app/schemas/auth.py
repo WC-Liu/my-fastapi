@@ -2,13 +2,13 @@ import uuid
 from datetime import datetime
 from typing import List
 
-from sqlmodel import Field, SQLModel
+from pydantic import BaseModel, Field
 
 from app.schemas.movie import MovieOutput
 
 
 # 用户创建模型
-class UserCreate(SQLModel):
+class UserCreate(BaseModel):
     username: str = Field(max_length=10)
     email: str = Field(max_length=40)
     password: str = Field(min_length=6)
@@ -16,7 +16,7 @@ class UserCreate(SQLModel):
 
 
 # 用户响应模型
-class UserOutput(SQLModel):
+class UserOutput(BaseModel):
     uid: uuid.UUID
     username: str
     email: str
@@ -24,26 +24,31 @@ class UserOutput(SQLModel):
     is_verified: bool
     created_at: datetime
     updated_at: datetime
-    # movies: List[MovieOutput]
-    model_config = {
-        "json_encoders": {datetime: lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S")}
-    }
 
 
 class UserMoviesOutput(UserOutput):
     movies: List[MovieOutput]
 
 
-class UserUpdate(SQLModel):
+class UserUpdate(BaseModel):
     username: str = Field(max_length=10)
     name: str = Field(max_length=20)
 
 
 # 用户登陆模型
-class UserLogging(SQLModel):
+class UserLogging(BaseModel):
     email: str = Field(max_length=40)
     password: str = Field(min_length=6)
 
 
-class Email(SQLModel):
+class Email(BaseModel):
     emails: List[str]
+
+
+class PasswordResetRequest(BaseModel):
+    email: str
+
+
+class PasswordResetConfirm(BaseModel):
+    new_password: str = Field(min_length=6)
+    confirm: str = Field(min_length=6)

@@ -22,3 +22,6 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+broker_url = settings.REDIS_URL
+result_backend = settings.REDIS_URL

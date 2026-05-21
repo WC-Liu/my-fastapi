@@ -47,6 +47,10 @@ class PermissionDeniedError(Exception):
     pass
 
 
+class AccountNotVerified(Exception):
+    pass
+
+
 # 电影模块
 class MovieNotFoundError(Exception):
     pass
@@ -77,6 +81,7 @@ def register_exception_handler(app: FastAPI):
         TokenExpiredError: (401, "登录已过期，请重新登录"),
         InvalidTokenError: (401, "token错误或者已过期"),
         PermissionDeniedError: (403, "权限不足，非管理员"),
+        AccountNotVerified: (403, "该账户未被验证"),
         AccessTokenRequired: (401, "请提供一个token"),
         RefreshTokenRequired: (401, "请提供一个刷新token"),
         MovieNotFoundError: (404, "电影不存在"),

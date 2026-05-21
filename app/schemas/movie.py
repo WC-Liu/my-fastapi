@@ -2,13 +2,13 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from sqlmodel import Field, SQLModel
+from pydantic import BaseModel, Field
 
 from .review import ReviewOutput
 
 
 # 公共字段
-class MovieBase(SQLModel):
+class MovieBase(BaseModel):
     title: str
     director: str
     year: int
@@ -24,7 +24,7 @@ class MovieCreate(MovieBase):
 
 
 # 更新请求
-class MovieUpdate(SQLModel):
+class MovieUpdate(BaseModel):
     title: Optional[str] = None
     director: Optional[str] = None
     year: Optional[int] = None
@@ -34,7 +34,7 @@ class MovieUpdate(SQLModel):
 
 
 # 响应模型
-class MovieOutput(SQLModel):
+class MovieOutput(BaseModel):
     uid: uuid.UUID
     title: str
     director: str

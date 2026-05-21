@@ -4,15 +4,17 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.security import (
     create_url_safe_token,
     decode_url_safe_token,
+    generate_passwd_hash,
 )
+from app.schemas.auth import PasswordResetConfirm
 from app.utils import exceptions
-from app.utils.mail import create_message, mail
+from app.utils.celery import send_email
 
 from .user_service import user_service
 
 
 class MailService:
-    async def send_verify_email(self, email: str, session: AsyncSession):
+    async def send_verify_email(self, email: str):
         token = create_url_safe_token({"email": email})
 
         link = f"http://localhost:8000/api/v1/auth/verify/{token}"
@@ -20,11 +22,9 @@ class MailService:
         <h1>验证邮箱</h1>
         <p>请点击这个链接 <a href="{link}">link</a> 验证你的邮箱<p>
         """
-        message = create_message(recipient=[email], subject="欢迎", body=html_message)
-        try:
-            await mail.send_message(message)
-        except Exception:
-            raise exceptions.MailServiceError()
+        emails = [email]
+        subject = "验证你的邮箱"
+        send_email.delay(emails, subject, html_message)
 
     async def verified_user(
         self, email_token: str, user_data: dict, session: AsyncSession
@@ -39,6 +39,37 @@ class MailService:
                 setattr(user, k, v)
             await session.commit()
         return JSONResponse(content={"messages": "账号创建成功"}, status_code=200)
+
+    async def password_reset(self, email: str):
+        token = create_url_safe_token({"email": email})
+
+        link = f"http://localhost:8000/api/v1/auth/password-reset-confirm/{token}"
+        html_message = f"""
+        <h1>重置密码</h1>
+        <p>请点击这个链接 <a href="{link}">link</a> 重置你的密码<p>
+        """
+        emails = [email]
+        subject = "重置你的密码"
+        send_email.delay(emails, subject, html_message)
+
+    async def reset_password(
+        self,
+        email_token: str,
+        passwords: PasswordResetConfirm,
+        session: AsyncSession,
+    ):
+        if passwords.new_password != passwords.confirm:
+            return False
+        token_data = decode_url_safe_token(email_token)
+        user_email = token_data.get("email")
+        if user_email:
+            user = await user_service.get_user_by_email(user_email, session)
+            if not user:
+                raise exceptions.UserNotFoundError()
+            new_password_hash = generate_passwd_hash(passwords.new_password)
+            user.password_hashed = new_password_hash
+            await session.commit()
+        return JSONResponse(content={"messages": "密码修改成功"}, status_code=200)
 
 
 mail_service = MailService()

@@ -22,7 +22,3 @@ class Review(SQLModel, table=True):
     )
     user: Optional["User"] = Relationship(back_populates="reviews")
     movie: Optional["Movie"] = Relationship(back_populates="reviews")
-
-    model_config = {
-        "json_encoders": {datetime: lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S")}
-    }

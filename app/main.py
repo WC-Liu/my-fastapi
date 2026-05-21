@@ -22,5 +22,5 @@ register_middleware(app)
 
 app.include_router(users.router, prefix="/api/v1/users", tags=["用户"])
 app.include_router(movies.router, prefix="/api/v1/movies", tags=["电影"])
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["用户"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["认证"])
 app.include_router(reviews.router, prefix="/api/v1/reviews", tags=["电影评论"])

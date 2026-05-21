@@ -2,15 +2,15 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlmodel import Field, SQLModel
+from pydantic import BaseModel, Field
 
 
-class ReviewCreate(SQLModel):
+class ReviewCreate(BaseModel):
     rating: float = Field(ge=0, le=10)
     review_text: str
 
 
-class ReviewOutput(SQLModel):
+class ReviewOutput(BaseModel):
     uid: uuid.UUID
     rating: float = Field(ge=0, le=10)
     review_text: str
@@ -18,7 +18,3 @@ class ReviewOutput(SQLModel):
     movie_id: Optional[uuid.UUID]
     created_at: datetime
     updated_at: datetime
-
-    model_config = {
-        "json_encoders": {datetime: lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S")}
-    }

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -12,6 +12,8 @@ from app.db.db import get_session
 from app.db.redis import add_jti_to_blacklist
 from app.schemas.auth import (
     Email,
+    PasswordResetConfirm,
+    PasswordResetRequest,
     UserCreate,
     UserLogging,
     UserMoviesOutput,
@@ -32,11 +34,12 @@ router = APIRouter()
 # 创建新用户
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def create_user(
-    user_data: UserCreate, session: AsyncSession = Depends(get_session)
+    user_data: UserCreate,
+    session: AsyncSession = Depends(get_session),
 ):
     new_user = await auth_service.create_user(user_data, session)
 
-    await mail_service.send_verify_email(user_data.email, session)
+    await mail_service.send_verify_email(user_data.email)
 
     return {"message": "账号已创建", "user": new_user}
 
@@ -65,7 +68,7 @@ async def get_new_access_token(token_details: dict = Depends(refreshtokenbearer)
 
 # 退出登录
 @router.get("/logout")
-async def revooke_token(token_details: dict = Depends(access_token_bearer)):
+async def revoke_token(token_details: dict = Depends(access_token_bearer)):
     jti = token_details["jti"]
     await add_jti_to_blacklist(jti)
 
@@ -75,6 +78,23 @@ async def revooke_token(token_details: dict = Depends(access_token_bearer)):
         },
         status_code=status.HTTP_200_OK,
     )
+
+
+@router.post("/password-reset-request")
+async def password_reset_request(email_data: PasswordResetRequest):
+    await mail_service.password_reset(email_data.email)
+    return JSONResponse(
+        content={"message": "请检查你的邮箱并重置你的密码"}, status_code=200
+    )
+
+
+@router.post("/password-reset-confirm/{email_token}")
+async def reset_password(
+    email_token: str,
+    passwords: PasswordResetConfirm,
+    session: AsyncSession = Depends(get_session),
+):
+    return await mail_service.reset_password(email_token, passwords, session)
 
 
 @router.get("/me", response_model=UserMoviesOutput)
