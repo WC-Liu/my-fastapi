@@ -4,20 +4,21 @@ from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.dependencies import AccessTokenBearer, RoleChecker, get_current_user
+from app.core.dependencies import get_current_active_superuser
 from app.db.db import get_session
-from app.models.user import User
+from app.models.models import User
 from app.schemas.auth import UserMoviesOutput, UserOutput, UserUpdate
 from app.service.user_service import user_service
 
-access_token_bearer = AccessTokenBearer()
-rolechecker = RoleChecker(["admin", "user"])
 router = APIRouter()
 
 
-@router.get("/", response_model=List[UserOutput])
+@router.get(
+    "/",
+    response_model=List[UserOutput],
+    dependencies=[Depends(get_current_active_superuser)],
+)
 async def get_all_users(
-    current_user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
     users = await user_service.get_all_users(session)
@@ -29,7 +30,6 @@ async def get_all_users(
 @router.get("/{user_uid}", response_model=UserOutput)
 async def get_user(
     user_uid: str,
-    current_user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
     user = await user_service.get_user_by_user_uid(user_uid, session)
@@ -42,7 +42,6 @@ async def get_user(
 async def update_user(
     user_uid: str,
     user_update: UserUpdate,
-    current_user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
     updated_user = await user_service.update_user(user_uid, user_update, session)
@@ -54,7 +53,6 @@ async def update_user(
 @router.delete("/{user_uid}")
 async def delete_user(
     user_uid: str,
-    current_user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
     result = await user_service.delete_user(user_uid, session)
@@ -66,12 +64,10 @@ async def delete_user(
 @router.get(
     "/{user_uid}/movies",
     response_model=List[UserMoviesOutput],
-    dependencies=[Depends(rolechecker)],
 )
 async def get_user_movie_sub(
     user_uid: str,
     session: AsyncSession = Depends(get_session),
-    token_dedails: dict = Depends(access_token_bearer),
 ):
     movies = await user_service.get_user_movies(user_uid, session)
     return movies

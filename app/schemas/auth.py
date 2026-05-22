@@ -12,7 +12,6 @@ class UserCreate(BaseModel):
     username: str = Field(max_length=10)
     email: str = Field(max_length=40)
     password: str = Field(min_length=6)
-    name: str = Field(max_length=20)
 
 
 # 用户响应模型
@@ -20,8 +19,7 @@ class UserOutput(BaseModel):
     uid: uuid.UUID
     username: str
     email: str
-    name: str
-    is_verified: bool
+    is_active: bool
     created_at: datetime
     updated_at: datetime
 
@@ -32,12 +30,11 @@ class UserMoviesOutput(UserOutput):
 
 class UserUpdate(BaseModel):
     username: str = Field(max_length=10)
-    name: str = Field(max_length=20)
 
 
 # 用户登陆模型
 class UserLogging(BaseModel):
-    email: str = Field(max_length=40)
+    username: str = Field(max_length=40)
     password: str = Field(min_length=6)
 
 

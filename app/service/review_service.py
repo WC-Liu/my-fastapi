@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models.review import Review
+from app.models.models import Review
 from app.schemas.review import ReviewCreate
 from app.service.auth_service import user_service
 from app.service.movie_service import movie_service

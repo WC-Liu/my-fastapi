@@ -1,81 +1,40 @@
-from typing import List
+from typing import Annotated
 
-from fastapi import Depends, Request, status
+from fastapi import Depends
 from fastapi.exceptions import HTTPException
-from fastapi.security import HTTPBearer
-from fastapi.security.http import HTTPAuthorizationCredentials
+from fastapi.security import OAuth2PasswordBearer
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.db.db import get_session
-from app.db.redis import token_in_blacklist
-from app.models.user import User
+from app.models.models import User
 from app.service.auth_service import user_service
-from app.utils import exceptions
 
 from .security import decode_token
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
-class TokenBearer(HTTPBearer):
-    def __init__(self, auto_error=True):
-        super().__init__(
-            auto_error=auto_error
-        )  # super(): python内置方法，调用父类的方法，初始化父类
-
-    async def __call__(self, request: Request) -> HTTPAuthorizationCredentials | None:
-        # 调用父类获取HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials)并存到creds
-        creds = await super().__call__(request)
-
-        token = creds.credentials
-        token_data = decode_token(token)
-
-        if not self.token_valid(token):
-            raise exceptions.InvalidTokenError()
-        if await token_in_blacklist(token_data["jti"]):
-            raise exceptions.InvalidTokenError()
-
-        self.verify_token_data(token_data)
-        return token_data
-
-    def token_valid(self, token: str) -> bool:
-        token_data = decode_token(token)
-        if token_data:
-            return True
-        else:
-            return False
-
-    def verify_token_data(self, token_data):
-        raise NotImplementedError("请在子类覆盖此方法")
-
-
-class AccessTokenBearer(TokenBearer):
-    def verify_token_data(self, token_data: dict):
-        if token_data and token_data["refresh"]:
-            raise exceptions.AccessTokenRequired()
-
-
-class RefreshTokenBearer(TokenBearer):
-    def verify_token_data(self, token_data: dict):
-        if token_data and not token_data["refresh"]:
-            raise exceptions.RefreshTokenRequired()
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
+TokenDep = Annotated[str, Depends(oauth2_scheme)]
 
 
 async def get_current_user(
-    token_details: dict = Depends(AccessTokenBearer()),
-    session: AsyncSession = Depends(get_session),
-):
-    user_email = token_details["user"]["email"]
-    user = await user_service.get_user_by_email(user_email, session)
+    token: TokenDep,
+    session: SessionDep,
+) -> User:
+    token_details = decode_token(token)
+    user_uid = token_details["sub"]
+    user = await user_service.get_user_by_user_uid(user_uid, session)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
     return user
 
 
-class RoleChecker:
-    def __init__(self, allowed_roles: List[str]) -> None:
-        self.allowed_roles = allowed_roles
+CurrentUser = Annotated[User, Depends(get_current_user)]
 
-    def __call__(self, current_user: User = Depends(get_current_user)):
-        if not current_user.is_verified:
-            raise exceptions.AccountNotVerified()
-        if current_user.role in self.allowed_roles:
-            return True
 
-        raise exceptions.PermissionDeniedError()
+def get_current_active_superuser(current_user: CurrentUser) -> User:
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="用户权限不足")
+    return current_user

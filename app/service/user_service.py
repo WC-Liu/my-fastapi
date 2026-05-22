@@ -1,8 +1,7 @@
 from sqlmodel import desc, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models.movie import Movie
-from app.models.user import User
+from app.models.models import Movie, User
 from app.schemas.auth import UserUpdate
 from app.utils import exceptions
 

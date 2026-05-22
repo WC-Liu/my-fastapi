@@ -1,21 +1,23 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
-from sqlmodel.ext.asyncio.session import AsyncSession
+from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel
 
 from app.core.dependencies import (
-    AccessTokenBearer,
-    RefreshTokenBearer,
-    RoleChecker,
+    CurrentUser,
+    SessionDep,
+    TokenDep,
+    get_current_active_superuser,
     get_current_user,
 )
-from app.db.db import get_session
+from app.core.security import decode_token
 from app.db.redis import add_jti_to_blacklist
 from app.schemas.auth import (
-    Email,
     PasswordResetConfirm,
     PasswordResetRequest,
     UserCreate,
-    UserLogging,
     UserMoviesOutput,
     UserOutput,
 )
@@ -24,51 +26,53 @@ from app.service.mail_service import mail_service
 
 # 刷新令牌过期时间
 REFRESH_TOKEN_EXPIRY = 2
-rolechecker = RoleChecker(["admin", "user"])
-access_token_bearer = AccessTokenBearer()
-refreshtokenbearer = RefreshTokenBearer()
-
+current_user = CurrentUser()
 router = APIRouter()
 
 
+class RefreshToken(BaseModel):
+    refresh_token: str
+
+
 # 创建新用户
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", response_model=UserOutput, status_code=status.HTTP_201_CREATED
+)
 async def create_user(
     user_data: UserCreate,
-    session: AsyncSession = Depends(get_session),
+    session: SessionDep,
 ):
     new_user = await auth_service.create_user(user_data, session)
 
     await mail_service.send_verify_email(user_data.email)
 
-    return {"message": "账号已创建", "user": new_user}
+    return new_user
 
 
 @router.get("/verify/{email_token}")
-async def verify_user_account(
-    email_token: str, session: AsyncSession = Depends(get_session)
-):
-    return await mail_service.verified_user(email_token, {"is_verified": True}, session)
+async def active_user_account(email_token: str, session: SessionDep):
+    return await mail_service.actived_user(email_token, {"is_active": True}, session)
 
 
 # 用户登陆
 @router.post("/login")
 async def login_user(
-    login_data: UserLogging, session: AsyncSession = Depends(get_session)
+    login_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep
 ):
     result = await auth_service.login_user(login_data, session)
     return result
 
 
 # 刷新令牌
-@router.get("/refresh")
-async def get_new_access_token(token_details: dict = Depends(refreshtokenbearer)):
-    return await auth_service.refresh_access_token(token_details)
+@router.post("/refresh")
+async def get_new_access_token(refresh_token: RefreshToken):
+    return await auth_service.refresh_access_token(refresh_token.refresh_token)
 
 
 # 退出登录
-@router.get("/logout")
-async def revoke_token(token_details: dict = Depends(access_token_bearer)):
+@router.get("/logout", dependencies=[Depends(get_current_user)])
+async def revoke_token(token: TokenDep) -> JSONResponse:
+    token_details = decode_token(token)
     jti = token_details["jti"]
     await add_jti_to_blacklist(jti)
 
@@ -92,13 +96,11 @@ async def password_reset_request(email_data: PasswordResetRequest):
 async def reset_password(
     email_token: str,
     passwords: PasswordResetConfirm,
-    session: AsyncSession = Depends(get_session),
+    session: SessionDep,
 ):
     return await mail_service.reset_password(email_token, passwords, session)
 
 
-@router.get("/me", response_model=UserMoviesOutput)
-async def get_current_user(
-    user=Depends(get_current_user), _: bool = Depends(rolechecker)
-):
+@router.get("/me", response_model=UserOutput)
+async def get_current_user(user: CurrentUser):
     return user

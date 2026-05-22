@@ -1,6 +1,7 @@
 import logging
 import uuid
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import jwt
 from itsdangerous import URLSafeTimedSerializer
@@ -24,13 +25,13 @@ def verify_password(password: str, hash: str) -> bool:
 
 # -------------------2. JWT功能块------------------
 def create_access_token(
-    user_data: dict, expiry: timedelta = None, refresh: bool = False
+    subject: str | Any, expiry: timedelta = None, refresh: bool = False
 ):
     if expiry is None:
         expiry = timedelta(hours=ACCESS_TOKEN_EXPIRY)
 
     payload = {
-        "user": user_data,
+        "sub": str(subject),
         "exp": datetime.now(timezone.utc) + expiry,
         "jti": str(uuid.uuid4()),
         "refresh": refresh,
