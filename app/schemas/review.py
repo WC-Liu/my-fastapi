@@ -17,4 +17,3 @@ class ReviewOutput(BaseModel):
     user_id: Optional[uuid.UUID]
     movie_id: Optional[uuid.UUID]
     created_at: datetime
-    updated_at: datetime

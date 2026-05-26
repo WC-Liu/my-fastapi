@@ -18,7 +18,15 @@ class InvalidPasswordError(Exception):
     pass
 
 
+class PasswordNotMatch(Exception):
+    pass
+
+
 class UserDisabledError(Exception):
+    pass
+
+
+class QueryFailed(Exception):
     pass
 
 
@@ -47,7 +55,11 @@ class PermissionDeniedError(Exception):
     pass
 
 
-class AccountNotVerified(Exception):
+class AccountNotActived(Exception):
+    pass
+
+
+class TokenInBlacklist(Exception):
     pass
 
 
@@ -77,15 +89,19 @@ def register_exception_handler(app: FastAPI):
         UserNotFoundError: (404, "用户不存在"),
         UserAlreadyExistsError: (400, "用户已注册"),
         InvalidPasswordError: (400, "密码错误"),
+        QueryFailed: (404, "查询失败"),
         UnauthorizedError: (401, "请先登录"),
         TokenExpiredError: (401, "登录已过期，请重新登录"),
         InvalidTokenError: (401, "token错误或者已过期"),
         PermissionDeniedError: (403, "权限不足，非管理员"),
-        AccountNotVerified: (403, "该账户未被验证"),
+        AccountNotActived: (403, "该账户未被激活"),
         AccessTokenRequired: (401, "请提供一个token"),
         RefreshTokenRequired: (401, "请提供一个刷新token"),
         MovieNotFoundError: (404, "电影不存在"),
+        MovieAlreadyExistsError: (400, "电影已存在"),
         MailServiceError: (500, "邮件发送失败"),
+        TokenInBlacklist: (400, "token在黑名单中"),
+        PasswordNotMatch: (400, "两次输入密码不一致"),
     }
     for exc, (code, msg) in handlers.items():
         app.add_exception_handler(exc, create_exception_handler(code, msg))

@@ -18,7 +18,6 @@ from app.schemas.auth import (
     PasswordResetConfirm,
     PasswordResetRequest,
     UserCreate,
-    UserMoviesOutput,
     UserOutput,
 )
 from app.service.auth_service import auth_service
@@ -85,8 +84,8 @@ async def revoke_token(token: TokenDep) -> JSONResponse:
 
 
 @router.post("/password-reset-request")
-async def password_reset_request(email_data: PasswordResetRequest):
-    await mail_service.password_reset(email_data.email)
+async def password_reset_request(email_data: PasswordResetRequest, session: SessionDep):
+    await mail_service.password_reset(email_data.email, session)
     return JSONResponse(
         content={"message": "请检查你的邮箱并重置你的密码"}, status_code=200
     )

@@ -1,11 +1,9 @@
 from typing import List
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
-from fastapi.exceptions import HTTPException
-from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.dependencies import get_current_active_superuser
-from app.db.db import get_session
+from app.core.dependencies import SessionDep, get_current_active_superuser
 from app.models.models import User
 from app.schemas.auth import UserMoviesOutput, UserOutput, UserUpdate
 from app.service.user_service import user_service
@@ -18,56 +16,47 @@ router = APIRouter()
     response_model=List[UserOutput],
     dependencies=[Depends(get_current_active_superuser)],
 )
-async def get_all_users(
-    session: AsyncSession = Depends(get_session),
-):
+async def get_all_users(session: SessionDep) -> List[User]:
     users = await user_service.get_all_users(session)
-    if not users:
-        raise HTTPException(status_code=403, detail="查询失败")
     return users
 
 
-@router.get("/{user_uid}", response_model=UserOutput)
-async def get_user(
-    user_uid: str,
-    session: AsyncSession = Depends(get_session),
-):
+@router.get(
+    "/{user_uid}",
+    response_model=UserOutput,
+    dependencies=[Depends(get_current_active_superuser)],
+)
+async def get_user(user_uid: UUID, session: SessionDep) -> User:
     user = await user_service.get_user_by_user_uid(user_uid, session)
-    if not user:
-        raise HTTPException(status_code=404, detail="用户不存在")
     return user
 
 
-@router.patch("/{user_uid}", response_model=UserOutput)
+@router.patch(
+    "/{user_uid}",
+    response_model=UserOutput,
+    dependencies=[Depends(get_current_active_superuser)],
+)
 async def update_user(
-    user_uid: str,
-    user_update: UserUpdate,
-    session: AsyncSession = Depends(get_session),
-):
+    user_uid: UUID, user_update: UserUpdate, session: SessionDep
+) -> User:
     updated_user = await user_service.update_user(user_uid, user_update, session)
-    if not updated_user:
-        raise HTTPException(status_code=404, detail="用户不存在")
     return updated_user
 
 
-@router.delete("/{user_uid}")
-async def delete_user(
-    user_uid: str,
-    session: AsyncSession = Depends(get_session),
-):
-    result = await user_service.delete_user(user_uid, session)
-    if not result:
-        raise HTTPException(status_code=400, detail="用户不存在")
-    return {}
+@router.delete(
+    "/{user_uid}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_current_active_superuser)],
+)
+async def delete_user(user_uid: UUID, session: SessionDep) -> None:
+    await user_service.delete_user(user_uid, session)
 
 
 @router.get(
     "/{user_uid}/movies",
     response_model=List[UserMoviesOutput],
+    dependencies=[Depends(get_current_active_superuser)],
 )
-async def get_user_movie_sub(
-    user_uid: str,
-    session: AsyncSession = Depends(get_session),
-):
+async def get_user_movie_sub(user_uid: UUID, session: SessionDep):
     movies = await user_service.get_user_movies(user_uid, session)
     return movies

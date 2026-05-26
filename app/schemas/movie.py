@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field
 from .review import ReviewOutput
 
 
-# 公共字段
-class MovieBase(BaseModel):
+# 创建请求
+class MovieCreate(BaseModel):
     title: str
     director: str
     year: int
@@ -16,11 +16,6 @@ class MovieBase(BaseModel):
     genre: str
     is_showing: bool = Field(default=False)
     imdb: str
-
-
-# 创建请求
-class MovieCreate(MovieBase):
-    pass
 
 
 # 更新请求
@@ -45,5 +40,7 @@ class MovieOutput(BaseModel):
     imdb: str
     user_id: uuid.UUID | None = None
     created_at: datetime
-    updated_at: datetime
+
+
+class MovieReviewOutPut(MovieOutput):
     reviews: List[ReviewOutput]

@@ -6,8 +6,10 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.db.db import get_session
+from app.db.redis import token_in_blacklist
 from app.models.models import User
 from app.service.auth_service import user_service
+from app.utils import exceptions
 
 from .security import decode_token
 
@@ -22,12 +24,17 @@ async def get_current_user(
     session: SessionDep,
 ) -> User:
     token_details = decode_token(token)
+    if not token_details:
+        raise exceptions.InvalidTokenError()
     user_uid = token_details["sub"]
     user = await user_service.get_user_by_user_uid(user_uid, session)
+    expired_token = await token_in_blacklist(token_details["jti"])
+    if expired_token:
+        raise exceptions.TokenInBlacklist()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise exceptions.UserNotFoundError()
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise exceptions.AccountNotActived()
     return user
 
 

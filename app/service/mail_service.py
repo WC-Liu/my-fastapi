@@ -40,17 +40,19 @@ class MailService:
             await session.commit()
         return JSONResponse(content={"messages": "账号创建成功"}, status_code=200)
 
-    async def password_reset(self, email: str):
-        token = create_url_safe_token({"email": email})
+    async def password_reset(self, email: str, session: AsyncSession):
+        user = await user_service.get_user_by_email(email, session)
+        if user:
+            token = create_url_safe_token({"email": email, "sub": str(user.uid)})
 
-        link = f"http://localhost:8000/api/v1/auth/password-reset-confirm/{token}"
-        html_message = f"""
-        <h1>重置密码</h1>
-        <p>请点击这个链接 <a href="{link}">link</a> 重置你的密码<p>
-        """
-        emails = [email]
-        subject = "重置你的密码"
-        send_email.delay(emails, subject, html_message)
+            link = f"http://localhost:8000/api/v1/auth/password-reset-confirm/{token}"
+            html_message = f"""
+            <h1>重置密码</h1>
+            <p>请点击这个链接 <a href="{link}">link</a> 重置你的密码<p>
+            """
+            emails = [email]
+            subject = "重置你的密码"
+            send_email.delay(emails, subject, html_message)
 
     async def reset_password(
         self,
@@ -59,16 +61,17 @@ class MailService:
         session: AsyncSession,
     ):
         if passwords.new_password != passwords.confirm:
-            return False
+            raise exceptions.PasswordNotMatch()
         token_data = decode_url_safe_token(email_token)
-        user_email = token_data.get("email")
-        if user_email:
-            user = await user_service.get_user_by_email(user_email, session)
+        user_uid = token_data.get("sub")
+        if user_uid:
+            user = await user_service.get_user_by_user_uid(user_uid, session)
             if not user:
                 raise exceptions.UserNotFoundError()
             new_password_hash = generate_passwd_hash(passwords.new_password)
             user.password_hashed = new_password_hash
             await session.commit()
+
         return JSONResponse(content={"messages": "密码修改成功"}, status_code=200)
 
 
