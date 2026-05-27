@@ -49,6 +49,7 @@
 | **Docker** | 容器化部署（推荐） |
 
 ## 📁 项目结构
+```text
 my-fastapi/
 ├── app/
 │   ├── core/
@@ -87,7 +88,7 @@ my-fastapi/
 ├── pyproject.toml             # 项目配置
 ├── alembic.ini                # Alembic 配置
 └── README.md
-
+```
 ## 🚀 快速开始
 
 ### 前置条件
