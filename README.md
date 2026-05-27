@@ -49,44 +49,7 @@
 | **Docker** | 容器化部署（推荐） |
 
 ## 📁 项目结构
-my-fastapi/
-├── app/
-│   ├── core/
-│   │   ├── config.py          # 全局配置
-│   │   ├── dependencies.py    # 依赖注入
-│   │   └── security.py        # 密码/JWT/令牌处理
-│   ├── db/
-│   │   ├── db.py              # 数据库连接
-│   │   └── redis.py           # Redis 连接
-│   ├── models/
-│   │   └── models.py          # 数据库模型（User, Movie, Review）
-│   ├── routers/
-│   │   ├── auth.py            # 认证路由
-│   │   ├── movies.py          # 电影路由
-│   │   ├── users.py           # 用户路由
-│   │   └── reviews.py         # 评论路由
-│   ├── schemas/
-│   │   ├── auth.py            # 认证数据模型
-│   │   ├── movie.py           # 电影数据模型
-│   │   ├── review.py          # 评论数据模型
-│   │   └── user.py            # 用户数据模型
-│   ├── service/
-│   │   ├── auth_service.py    # 认证业务逻辑
-│   │   ├── user_service.py    # 用户业务逻辑
-│   │   ├── movie_service.py   # 电影业务逻辑
-│   │   ├── review_service.py  # 评论业务逻辑
-│   │   └── mail_service.py    # 邮件业务逻辑
-│   ├── utils/
-│   │   ├── exceptions.py      # 自定义异常处理
-│   │   ├── middleware.py      # 中间件
-│   │   ├── mail.py            # 邮件工具
-│   │   └── celery.py          # Celery 任务配置
-│   └── main.py                # 应用入口
-├── migrations/                # 数据库迁移文件
-├── tests/                     # 测试文件
-├── pyproject.toml             # 项目配置
-├── alembic.ini                # Alembic 配置
-└── README.md
+
 
 ## 🚀 快速开始
 
