@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from datetime import timezone
 
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -62,7 +63,7 @@ class AuthService:
         expired_token = await token_in_blacklist(token_details["jti"])
         if expired_token:
             raise exceptions.TokenInBlacklist()
-        if datetime.fromtimestamp(token_details["exp"]) > datetime.now():
+        if datetime.fromtimestamp(token_details["exp"]) > datetime.now(timezone.utc):
             new_access_token = create_access_token(subject=token_details["sub"])
             new_refresh_token = create_access_token(
                 subject=token_details["sub"],
