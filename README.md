@@ -157,7 +157,7 @@ fastapi dev
 | POST | `/register` | 用户注册 | 公开 |
 | GET | `/verify/{token}` | 邮箱验证 | 公开 |
 | POST | `/login` | 用户登录 | 公开 |
-| POST | `/refresh` | 刷新令牌 | 公开 |
+| POST | `/refresh` | 刷新令牌 | 登录用户 |
 | GET | `/logout` | 退出登录 | 登录用户 |
 | POST | `/password-reset-request` | 请求密码重置 | 公开 |
 | POST | `/password-reset-confirm/{token}` | 确认密码重置 | 公开 |
