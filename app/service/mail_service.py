@@ -14,7 +14,7 @@ from .user_service import user_service
 
 
 class MailService:
-    async def send_verify_email(self, email: str):
+    async def send_verify_email(self, email: str) -> None:
         token = create_url_safe_token({"email": email})
 
         link = f"http://localhost:8000/api/v1/auth/verify/{token}"
@@ -28,7 +28,7 @@ class MailService:
 
     async def actived_user(
         self, email_token: str, user_data: dict, session: AsyncSession
-    ):
+    ) -> None:
         token_data = decode_url_safe_token(email_token)
         user_email = token_data.get("email")
         if user_email:
@@ -38,9 +38,9 @@ class MailService:
             for k, v in user_data.items():
                 setattr(user, k, v)
             await session.commit()
-        return JSONResponse(content={"messages": "账号创建成功"}, status_code=200)
+        # return JSONResponse(content={"messages": "账号创建成功"}, status_code=200)
 
-    async def password_reset(self, email: str, session: AsyncSession):
+    async def password_reset(self, email: str, session: AsyncSession) -> None:
         user = await user_service.get_user_by_email(email, session)
         if user:
             token = create_url_safe_token({"email": email, "sub": str(user.uid)})
@@ -59,7 +59,7 @@ class MailService:
         email_token: str,
         passwords: PasswordResetConfirm,
         session: AsyncSession,
-    ):
+    ) -> None:
         if passwords.new_password != passwords.confirm:
             raise exceptions.PasswordNotMatch()
         token_data = decode_url_safe_token(email_token)
@@ -72,7 +72,7 @@ class MailService:
             user.password_hashed = new_password_hash
             await session.commit()
 
-        return JSONResponse(content={"messages": "密码修改成功"}, status_code=200)
+        # return JSONResponse(content={"messages": "密码修改成功"}, status_code=200)
 
 
 mail_service = MailService()

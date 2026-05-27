@@ -1,3 +1,4 @@
+from typing import List
 from uuid import UUID
 
 from fastapi import status
@@ -14,11 +15,16 @@ from app.utils import exceptions
 
 
 class ReviewService:
-    async def get_movie_all_reviews(self, movie_uid: UUID, session: AsyncSession):
+    async def get_movie_all_reviews(
+        self, movie_uid: UUID, session: AsyncSession
+    ) -> List[Review]:
         await movie_service.get_movie(movie_uid, session)
         stmt = select(Review)
         results = await session.exec(stmt)
-        return results.all()
+        reviews = results.all()
+        if reviews is None:
+            raise HTTPException(status_code=404, detail="不存在")
+        return reviews
 
     async def add_review_to_movie(
         self,
@@ -37,21 +43,22 @@ class ReviewService:
         await session.commit()
         return new_review
 
-    async def get_review(
-        user_uid: UUID, movie_uid: UUID, review_uid: UUID, session: AsyncSession
-    ):
-        # await movie_service.get_movie(movie_uid, session)
-        # await user_service.get_user_by_user_uid(user_uid, session)
+    async def get_review(self, review_uid: UUID, session: AsyncSession) -> Review:
         stmt = select(Review).where(Review.uid == review_uid)
         result = await session.exec(stmt)
-        if not result:
-            return False
-        return result.first()
+        review = result.first()
+        if review is None:
+            raise HTTPException(status_code=404, detail="不存在")
+        return review
 
     async def delete_user_review(
         self, user_uid: UUID, movie_uid: UUID, review_uid: str, session: AsyncSession
-    ):
-        review = await self.get_review(user_uid, movie_uid, review_uid, session)
+    ) -> None:
+        await user_service.get_user_by_user_uid(user_uid, session)
+        await movie_service.get_movie(movie_uid, session)
+        review = await self.get_review(review_uid, session)
         await session.delete(review)
         await session.commit()
-        return True
+
+
+review_service = ReviewService()

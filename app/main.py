@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 
-from .routers import auth, movies, reviews, users
+from .routers import auth, movies, users
+from .schemas.auth import ApiResponse
 from .utils.exceptions import register_exception_handler
 from .utils.middleware import register_middleware
 
@@ -16,7 +18,21 @@ async def life_span(app: FastAPI):
 
 app = FastAPI(lifespan=life_span)
 
+
+# 全局异常处理
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=ApiResponse(
+            code=exc.status_code, message=str(exc.detail), data=None
+        ).model_dump(),
+    )
+
+
+# 自定义异常处理
 register_exception_handler(app)
+# 中间件
 register_middleware(app)
 
 app.include_router(users.router, prefix="/api/v1/users", tags=["用户"])

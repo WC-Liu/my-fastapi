@@ -11,6 +11,7 @@ from .config import settings
 
 passwd_context = PasswordHash.recommended()
 ACCESS_TOKEN_EXPIRY = 1
+REFRESH_TOKEN_EXPIRY = 2
 DUMMY_HASH = passwd_context.hash("dummypassword")
 
 

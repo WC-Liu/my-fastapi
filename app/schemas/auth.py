@@ -1,10 +1,12 @@
 import uuid
 from datetime import datetime
-from typing import List
+from typing import Any, Generic, List, Optional, TypeVar
 
 from pydantic import BaseModel, Field
 
 from app.schemas.movie import MovieOutput
+
+T = TypeVar("T")
 
 
 # 用户创建模型
@@ -20,12 +22,9 @@ class UserOutput(BaseModel):
     username: str
     email: str
     is_active: bool
+    is_superuser: bool
     created_at: datetime
     updated_at: datetime
-
-
-class UserMoviesOutput(UserOutput):
-    movies: List[MovieOutput]
 
 
 class UserUpdate(BaseModel):
@@ -38,8 +37,10 @@ class UserLogging(BaseModel):
     password: str = Field(min_length=6)
 
 
-class Email(BaseModel):
-    emails: List[str]
+class Token(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
 
 
 class PasswordResetRequest(BaseModel):
@@ -49,3 +50,9 @@ class PasswordResetRequest(BaseModel):
 class PasswordResetConfirm(BaseModel):
     new_password: str = Field(min_length=6)
     confirm: str = Field(min_length=6)
+
+
+class ApiResponse(BaseModel, Generic[T]):
+    code: int = 200
+    message: str = "ok"
+    data: Optional[T] = None

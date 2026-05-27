@@ -25,9 +25,6 @@ class User(SQLModel, table=True):
     updated_at: datetime | None = Field(
         default_factory=get_datetime_utc, sa_type=DateTime(timezone=True)
     )
-    movies: List["Movie"] = Relationship(
-        back_populates="user", sa_relationship_kwargs={"lazy": "selectin"}
-    )
     reviews: List["Review"] = Relationship(
         back_populates="user", sa_relationship_kwargs={"lazy": "selectin"}
     )
@@ -44,11 +41,9 @@ class Movie(SQLModel, table=True):
     genre: str
     is_showing: bool = Field(default=False)
     imdb: str
-    user_id: Optional[uuid.UUID] = Field(default=None, foreign_key="users.uid")
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc, sa_type=DateTime(timezone=True)
     )
-    user: Optional["User"] = Relationship(back_populates="movies")
     reviews: List["Review"] = Relationship(
         back_populates="movie", sa_relationship_kwargs={"lazy": "selectin"}
     )

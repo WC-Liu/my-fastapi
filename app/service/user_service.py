@@ -1,3 +1,4 @@
+from typing import List
 from uuid import UUID
 
 from sqlalchemy.orm import selectinload
@@ -10,51 +11,40 @@ from app.utils import exceptions
 
 
 class UserService:
-    # 获取所有用户
-    async def get_all_users(self, session: AsyncSession):
+    async def get_all_users(self, session: AsyncSession) -> List[Movie]:
         stmt = select(User).order_by(desc(User.created_at))
         result = await session.exec(stmt)
-        if not result:
-            raise exceptions.QueryFailed()
         return result.all()
 
-    # 通过邮件查询用户
     async def get_user_by_email(self, email: str, session: AsyncSession) -> User:
         stmt = select(User).where(User.email == email)
         result = await session.exec(stmt)
-        if not result:
+        user = result.first()
+        if user is None:
             raise exceptions.UserNotFoundError()
-        return result.first()
+        return user
 
-    # 通过用户uid查询用户
-    async def get_user_by_user_uid(self, user_uid: UUID, session: AsyncSession):
+    async def get_user_by_user_uid(self, user_uid: UUID, session: AsyncSession) -> User:
         stmt = select(User).where(User.uid == user_uid)
         result = await session.exec(stmt)
-        if not result:
+        user = result.first()
+        if user is None:
             raise exceptions.UserNotFoundError()
-        return result.first()
+        return user
 
-    # 修改用户信息
     async def update_user(
         self, user_uid: UUID, user_update: UserUpdate, session: AsyncSession
-    ):
+    ) -> User:
         user = await self.get_user_by_user_uid(user_uid, session)
         for key, value in user_update.model_dump(exclude_unset=True).items():
             setattr(user, key, value)
             await session.commit()
         return user
 
-    # 删除用户
-    async def delete_user(self, user_uid: UUID, session: AsyncSession):
+    async def delete_user(self, user_uid: UUID, session: AsyncSession) -> None:
         user = await self.get_user_by_user_uid(user_uid, session)
         await session.delete(user)
         await session.commit()
-        return True
-
-    async def get_user_movies(self, user_uid: UUID, session: AsyncSession):
-        stmt = select(User).where(User.uid == user_uid)
-        result = await session.exec(stmt)
-        return result.all()
 
 
 user_service = UserService()

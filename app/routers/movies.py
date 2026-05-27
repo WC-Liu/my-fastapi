@@ -12,6 +12,7 @@ from app.core.dependencies import (
 from app.models.models import Movie
 from app.service.movie_service import movie_service
 
+from ..schemas.auth import ApiResponse
 from ..schemas.movie import MovieCreate, MovieOutput, MovieReviewOutPut, MovieUpdate
 
 router = APIRouter()
@@ -20,46 +21,52 @@ router = APIRouter()
 # 获取所有电影
 @router.get(
     "/",
-    response_model=List[MovieReviewOutPut],
+    response_model=ApiResponse[List[MovieReviewOutPut]],
     dependencies=[Depends(get_current_user)],
 )
-async def get_movies(session: SessionDep) -> Movie:
-    return await movie_service.get_all_movies(session)
+async def get_movies(session: SessionDep) -> ApiResponse[List[MovieReviewOutPut]]:
+    movies = await movie_service.get_all_movies(session)
+    return ApiResponse(data=movies)
 
 
 # 获取某部电影
 @router.get(
     "/{movie_uid}",
-    response_model=MovieReviewOutPut,
+    response_model=ApiResponse[MovieReviewOutPut],
     dependencies=[Depends(get_current_user)],
 )
-async def get_movie(movie_uid: str, session: SessionDep) -> Movie:
-    return await movie_service.get_movie(movie_uid, session)
+async def get_movie(
+    movie_uid: str, session: SessionDep
+) -> ApiResponse[MovieReviewOutPut]:
+    movie = await movie_service.get_movie(movie_uid, session)
+    return ApiResponse(data=movie)
 
 
 # 创建电影
 @router.post(
     "/",
-    response_model=MovieOutput,
+    response_model=ApiResponse[MovieOutput],
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_current_active_superuser)],
 )
 async def create_movie(
-    movie_data: MovieCreate, current_user: CurrentUser, session: SessionDep
-) -> Movie:
-    user_uid = current_user.uid
-    return await movie_service.create_movie(movie_data, user_uid, session)
+    movie_data: MovieCreate, session: SessionDep
+) -> ApiResponse[MovieOutput]:
+    movie = await movie_service.create_movie(movie_data, session)
+    return ApiResponse(data=movie)
 
 
 # 更新电影信息
 @router.patch(
     "/{movie_uid}",
-    response_model=MovieOutput,
+    response_model=ApiResponse[MovieOutput],
     dependencies=[Depends(get_current_active_superuser)],
 )
 async def update_movie(
     movie_uid: str, movie_update: MovieUpdate, session: SessionDep
-) -> Movie:
-    return await movie_service.update_movie(movie_uid, movie_update, session)
+) -> ApiResponse[MovieOutput]:
+    movie = await movie_service.update_movie(movie_uid, movie_update, session)
+    return ApiResponse(data=movie)
 
 
 # 删除电影

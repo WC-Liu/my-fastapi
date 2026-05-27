@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
 
-from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.security import (
     DUMMY_HASH,
+    REFRESH_TOKEN_EXPIRY,
     create_access_token,
     decode_token,
     generate_passwd_hash,
@@ -14,18 +13,10 @@ from app.core.security import (
 )
 from app.db.redis import add_jti_to_blacklist, token_in_blacklist
 from app.models.models import User
-from app.schemas.auth import UserCreate
+from app.schemas.auth import Token, UserCreate
 from app.utils import exceptions
 
 from .user_service import user_service
-
-REFRESH_TOKEN_EXPIRY = 2
-
-
-class Token(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
 
 
 class AuthService:
@@ -62,7 +53,7 @@ class AuthService:
         return Token(access_token=access_token, refresh_token=refresh_token)
 
     # 刷新令牌
-    async def refresh_access_token(self, token: str):
+    async def refresh_access_token(self, token: str) -> dict:
         token_details = decode_token(token)
         if token_details is None:
             raise exceptions.InvalidTokenError()
@@ -79,12 +70,11 @@ class AuthService:
                 expiry=timedelta(days=REFRESH_TOKEN_EXPIRY),
             )
             await add_jti_to_blacklist(token_details["jti"])
-            return JSONResponse(
-                content={
-                    "new_access_token": new_access_token,
-                    "new_refresh_token": new_refresh_token,
-                }
-            )
+            return {
+                "new_access_token": new_access_token,
+                "new_refresh_token": new_refresh_token,
+            }
+
         raise exceptions.TokenExpiredError()
 
 

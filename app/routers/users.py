@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 
 from app.core.dependencies import SessionDep, get_current_active_superuser
 from app.models.models import User
-from app.schemas.auth import UserMoviesOutput, UserOutput, UserUpdate
+from app.schemas.auth import UserOutput, UserUpdate
 from app.service.user_service import user_service
 
 router = APIRouter()
@@ -50,13 +50,3 @@ async def update_user(
 )
 async def delete_user(user_uid: UUID, session: SessionDep) -> None:
     await user_service.delete_user(user_uid, session)
-
-
-@router.get(
-    "/{user_uid}/movies",
-    response_model=List[UserMoviesOutput],
-    dependencies=[Depends(get_current_active_superuser)],
-)
-async def get_user_movie_sub(user_uid: UUID, session: SessionDep):
-    movies = await user_service.get_user_movies(user_uid, session)
-    return movies
