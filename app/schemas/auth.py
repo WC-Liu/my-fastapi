@@ -11,7 +11,7 @@ T = TypeVar("T")
 
 # 用户创建模型
 class UserCreate(BaseModel):
-    username: str = Field(max_length=10)
+    username: str = Field(max_length=25)
     email: str = Field(max_length=40)
     password: str = Field(min_length=6)
 
@@ -28,7 +28,7 @@ class UserOutput(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    username: str = Field(max_length=10)
+    username: str = Field(max_length=25)
 
 
 # 用户登陆模型

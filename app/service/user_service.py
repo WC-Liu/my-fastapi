@@ -20,7 +20,7 @@ class UserService:
         stmt = select(User).where(User.email == email)
         result = await session.exec(stmt)
         user = result.first()
-        if user is None:
+        if not user:
             raise exceptions.UserNotFoundError()
         return user
 

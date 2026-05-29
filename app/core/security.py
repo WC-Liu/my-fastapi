@@ -38,14 +38,14 @@ def create_access_token(
         "refresh": refresh,
     }
     return jwt.encode(
-        payload=payload, key=settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHMA
+        payload=payload, key=settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
     )
 
 
 def decode_token(token: str) -> dict:
     try:
         token_data = jwt.decode(
-            jwt=token, key=settings.JWT_SECRET, algorithms=settings.JWT_ALGORITHMA
+            jwt=token, key=settings.JWT_SECRET, algorithms=settings.JWT_ALGORITHM
         )
         return token_data
     except jwt.ExpiredSignatureError:

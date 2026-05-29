@@ -38,7 +38,6 @@ class MailService:
             for k, v in user_data.items():
                 setattr(user, k, v)
             await session.commit()
-        # return JSONResponse(content={"messages": "账号创建成功"}, status_code=200)
 
     async def password_reset(self, email: str, session: AsyncSession) -> None:
         user = await user_service.get_user_by_email(email, session)
@@ -71,8 +70,6 @@ class MailService:
             new_password_hash = generate_passwd_hash(passwords.new_password)
             user.password_hashed = new_password_hash
             await session.commit()
-
-        # return JSONResponse(content={"messages": "密码修改成功"}, status_code=200)
 
 
 mail_service = MailService()

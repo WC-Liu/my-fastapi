@@ -19,7 +19,6 @@ dependencies = [
     "pwdlib[argon2]>=0.3.0",
     "pydantic-settings>=2.14.1",
     "pyjwt>=2.12.1",
-    "pytest>=9.0.3",
     "redis>=7.4.0",
     "schemathesis>=4.19.0",
     "sqlmodel>=0.0.38",
@@ -28,13 +27,19 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ruff>=0.15.12",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.4.0",
+    "httpx>=0.28.1",
 ]
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+# ruff配置
 [tool.ruff]
-# 行长度限制（与 Black 默认保持一致）
 line-length = 88
 
-# 排除目录
 exclude = [
     ".venv",
     "venv",
@@ -45,7 +50,6 @@ exclude = [
     ".ruff_cache",
     "tests/fixtures",
 ]
-
 
 [tool.ruff.lint]
 ignore = ["F401"]

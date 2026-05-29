@@ -1,7 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import Depends, status
+from fastapi import Depends, status, APIRouter
 
 from app.core.dependencies import CurrentUser, SessionDep, get_current_user
 from app.models.models import Review
@@ -9,16 +9,17 @@ from app.schemas.auth import ApiResponse
 from app.schemas.review import ReviewCreate, ReviewOutput
 from app.service.review_service import review_service
 
-from .movies import router
+router = APIRouter()
 
 
 @router.post("/{movie_uid}/reviews")
 async def add_review_to_movies(
-    movie_uid: str,
+    movie_uid: UUID,
     review_data: ReviewCreate,
     current_user: CurrentUser,
     session: SessionDep,
 ) -> ApiResponse[Review]:
+    print("调试信息")
     new_review = await review_service.add_review_to_movie(
         user_email=current_user.email,
         movie_uid=movie_uid,

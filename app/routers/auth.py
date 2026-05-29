@@ -45,7 +45,7 @@ async def create_user(
 
     await mail_service.send_verify_email(user_data.email)
 
-    return ApiResponse(data=new_user)
+    return ApiResponse(code=201, data=new_user)
 
 
 @router.get("/verify/{email_token}")
@@ -72,10 +72,7 @@ async def get_new_access_token(refresh_token: RefreshToken) -> ApiResponse:
 # 退出登录
 @router.get("/logout", dependencies=[Depends(get_current_user)])
 async def revoke_token(token: TokenDep) -> ApiResponse:
-    token_details = decode_token(token)
-    jti = token_details["jti"]
-    await add_jti_to_blacklist(jti)
-
+    await auth_service.logout_user(token)
     return ApiResponse(message="已成功注销")
 
 

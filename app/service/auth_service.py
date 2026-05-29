@@ -3,7 +3,6 @@ from datetime import timezone
 
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel.ext.asyncio.session import AsyncSession
-
 from app.core.security import (
     DUMMY_HASH,
     REFRESH_TOKEN_EXPIRY,
@@ -24,9 +23,12 @@ class AuthService:
     # 创建用户
     async def create_user(self, user_data: UserCreate, session: AsyncSession) -> User:
         new_user = User(**(user_data.model_dump()))
-        user = await user_service.get_user_by_email(new_user.email, session)
-        if user:
-            raise exceptions.UserAlreadyExistsError()
+        try:
+            user = await user_service.get_user_by_email(new_user.email, session)
+            if user:
+                raise exceptions.UserAlreadyExistsError()
+        except exceptions.UserNotFoundError:
+            pass
         new_user.password_hashed = generate_passwd_hash(user_data.password)
 
         session.add(new_user)
@@ -78,5 +80,9 @@ class AuthService:
 
         raise exceptions.TokenExpiredError()
 
+    async def logout_user(self, token: str) -> None:
+        token_details = decode_token(token)
+        jti = token_details["jti"]
+        await add_jti_to_blacklist(jti)
 
 auth_service = AuthService()

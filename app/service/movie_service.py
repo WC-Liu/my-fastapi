@@ -20,7 +20,7 @@ class MovieService:
         stmt = select(Movie).where(Movie.uid == movie_uid)
         result = await session.exec(stmt)
         movie = result.first()
-        if not movie:
+        if movie is None:
             raise exceptions.MovieNotFoundError()
         return movie
 
