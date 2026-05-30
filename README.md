@@ -46,7 +46,7 @@
 | **FastAPI-Mail** | 邮件服务 |
 | **Ruff** | 代码检查 |
 | **Pytest** | 单元测试 |
-| **Docker** | 容器化部署（推荐） |
+| **Docker** | 容器化部署 |
 
 ## 📁 项目结构
 ```text
@@ -85,6 +85,9 @@ my-fastapi/
 │   └── main.py                # 应用入口
 ├── migrations/                # 数据库迁移文件
 ├── tests/                     # 测试文件
+├── dockerfile                 # Docker 构建文件
+├── docker-compose.yml         # Docker 编排配置
+├── uv.lock                    # 依赖锁定文件
 ├── pyproject.toml             # 项目配置
 ├── alembic.ini                # Alembic 配置
 └── README.md
@@ -110,7 +113,7 @@ cd my-fastapi
 创建 `.env` 文件：
 
 ```env
-DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/mydb
+DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/movies_db
 JWT_SECRET=your-secret-key
 JWT_ALGORITHMA=HS256
 REDIS_URL=redis://localhost:6379/0
@@ -189,51 +192,29 @@ pytest tests/ -v
 ```
 
 ## 📦 Docker 部署（推荐）
+### 构建并启动
 
-```dockerfile
-# Dockerfile
-FROM python:3.12-slim
+```bash
+docker compose up -d
+```
+这会启动以下容器：
 
-WORKDIR /app
+| 服务 | 镜像 | 说明 |
+|------|------|------|
+| `app` | 自定义 | FastAPI 应用（:8000） |
+| `db` | postgres:16-alpine | PostgreSQL 数据库 |
+| `redis` | redis:7-alpine | Redis 缓存 |
+| `celery-worker` | 自定义 | Celery 异步任务 worker |
 
-COPY pyproject.toml .
-RUN pip install -e .
+### 运行数据库迁移
 
-COPY . .
-
-CMD ["fastapi", "dev"]
+```bash
+docker compose exec app alembic upgrade head
 ```
 
-```yaml
-# docker-compose.yml
-version: "3.8"
+### 查看日志
 
-services:
-  app:
-    build: .
-    ports:
-      - "8000:8000"
-    env_file: .env
-    depends_on:
-      - db
-      - redis
-
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-
-volumes:
-  pgdata:
+```bash
+docker compose logs -f app
 ```
 
-## 📄 开源协议
-
-MIT
