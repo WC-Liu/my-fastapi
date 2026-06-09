@@ -1,6 +1,6 @@
-import uuid
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -11,9 +11,9 @@ class ReviewCreate(BaseModel):
 
 
 class ReviewOutput(BaseModel):
-    uid: uuid.UUID
+    uid: UUID
     rating: float = Field(ge=0, le=10)
     review_text: str
-    user_id: Optional[uuid.UUID]
-    movie_id: Optional[uuid.UUID]
+    user_id: UUID | None = None
+    movie_id: UUID | None = None
     created_at: datetime

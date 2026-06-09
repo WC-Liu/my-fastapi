@@ -38,7 +38,6 @@ class MovieOutput(BaseModel):
     genre: str
     is_showing: bool
     imdb: str
-    user_id: uuid.UUID | None = None
     created_at: datetime
 
 

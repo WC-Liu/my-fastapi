@@ -50,7 +50,7 @@ async def create_user(
 
 @router.get("/verify/{email_token}")
 async def active_user_account(email_token: str, session: SessionDep) -> ApiResponse:
-    await mail_service.actived_user(email_token, {"is_active": True}, session)
+    await mail_service.activated_user(email_token, {"is_active": True}, session)
     return ApiResponse(message="账号创建成功")
 
 

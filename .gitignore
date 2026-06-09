@@ -13,3 +13,4 @@ wheels/
 .vscode
 .hypothesis
 .pytest_cache
+.trae

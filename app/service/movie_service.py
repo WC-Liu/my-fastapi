@@ -1,7 +1,6 @@
 from typing import List
 from uuid import UUID
 
-from sqlalchemy.orm import selectinload
 from sqlmodel import desc, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -43,7 +42,7 @@ class MovieService:
         movie_to_update = await self.get_movie(movie_uid, session)
         for field, value in movie_data.model_dump(exclude_unset=True).items():
             setattr(movie_to_update, field, value)
-            await session.commit()
+        await session.commit()
         return movie_to_update
 
     async def delete_movie(self, movie_uid: UUID, session: AsyncSession) -> None:

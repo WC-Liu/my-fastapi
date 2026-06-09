@@ -15,6 +15,7 @@ REGISTER_DATA = {
     "password": "testpass123",
 }
 
+
 class TestRegister:
     async def test_register_success(self, async_client):
         """注册成功：返回 201 和用户信息"""
@@ -37,7 +38,6 @@ class TestRegister:
         assert body["data"]["username"] == "testuser"
         assert body["data"]["email"] == "test@example.com"
 
-    
     async def test_register_duplicate_email(self, async_client):
         """注册重复邮箱：返回 400"""
         with patch(
@@ -48,7 +48,7 @@ class TestRegister:
                 f"{auth_prefix}/register", json=REGISTER_DATA
             )
         assert resp.status_code == 400
-        #assert "已注册" in resp.text or "已存在" in resp.text
+        # assert "已注册" in resp.text or "已存在" in resp.text
 
     async def test_register_invalid_data(self, async_client):
         """注册数据不合法：密码太短"""
@@ -57,6 +57,7 @@ class TestRegister:
             json={"username": "u", "email": "u@u.com", "password": "12"},
         )
         assert resp.status_code == 422
+
 
 class TestLogin:
     async def test_login_success(self, async_client):
@@ -69,18 +70,18 @@ class TestLogin:
         )
         with patch(
             "app.service.auth_service.user_service.get_user_by_email",
-            return_value=mock_user
+            return_value=mock_user,
         ):
             resp = await async_client.post(
                 f"{auth_prefix}/login",
-                data={"username": "test@example.com", "password": "testpass123"}
+                data={"username": "test@example.com", "password": "testpass123"},
             )
         assert resp.status_code == 200
         body = resp.json()
         assert "access_token" in body
         assert "refresh_token" in body
         assert body["token_type"] == "bearer"
-    
+
     async def test_login_wrong_password(self, async_client):
         """登录密码错误：返回 400"""
         mock_user = User(
@@ -100,7 +101,8 @@ class TestLogin:
             )
 
         assert resp.status_code == 400
-    
+
+
 class TestMe:
     async def test_me_authenticated(self, authed_client):
         """已登录用户获取个人信息：成功"""
@@ -129,19 +131,19 @@ class TestRefreshToken:
 
         assert resp.status_code == 401
 
+
 class TestVerifyEmail:
     async def test_verify_email_success(self, async_client):
         with patch(
             "app.routers.auth.mail_service.actived_user",
             new=AsyncMock(),
         ):
-            resp = await async_client.get(
-                f"{auth_prefix}/verify/some-email-token"
-            )
+            resp = await async_client.get(f"{auth_prefix}/verify/some-email-token")
 
         assert resp.status_code == 200
         body = resp.json()
         assert body["message"] == "账号创建成功"
+
 
 class TestLogout:
     async def test_logout_success(self, authed_client):
@@ -156,17 +158,15 @@ class TestLogout:
         assert resp.status_code == 200
         body = resp.json()
         assert body["message"] == "已成功注销"
-    
+
     async def test_logout_unauthenticated(self, async_client):
         resp = await async_client.get(f"{auth_prefix}/logout")
         assert resp.status_code == 401
 
+
 class TestPasswordReset:
     async def test_password_reset_request_success(self, async_client):
-        with patch(
-            "app.routers.auth.mail_service.password_reset",
-            new=AsyncMock()
-        ):
+        with patch("app.routers.auth.mail_service.password_reset", new=AsyncMock()):
             resp = await async_client.post(
                 f"{auth_prefix}/password-reset-request",
                 json={"email": "test@example.com"},
@@ -174,7 +174,7 @@ class TestPasswordReset:
         assert resp.status_code == 200
         body = resp.json()
         assert body["message"] == "请检查你的邮箱并重置你的密码"
-    
+
     async def test_password_reset_confirm_success(self, async_client):
         with patch(
             "app.routers.auth.mail_service.reset_password",
@@ -182,7 +182,7 @@ class TestPasswordReset:
         ):
             resp = await async_client.post(
                 f"{auth_prefix}/password-reset-confirm/some-token",
-                json={"new_password": "newpass123", "confirm": "newpass123"}
+                json={"new_password": "newpass123", "confirm": "newpass123"},
             )
         assert resp.status_code == 200
         body = resp.json()

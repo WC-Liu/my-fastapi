@@ -26,7 +26,7 @@ class MailService:
         subject = "验证你的邮箱"
         send_email.delay(emails, subject, html_message)
 
-    async def actived_user(
+    async def activated_user(
         self, email_token: str, user_data: dict, session: AsyncSession
     ) -> None:
         token_data = decode_url_safe_token(email_token)

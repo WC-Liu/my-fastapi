@@ -1,8 +1,8 @@
-from datetime import datetime, timedelta
-from datetime import timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.core.security import (
     DUMMY_HASH,
     REFRESH_TOKEN_EXPIRY,
@@ -62,17 +62,21 @@ class AuthService:
             raise exceptions.InvalidTokenError()
         if not token_details["refresh"]:
             raise exceptions.RefreshTokenRequired()
-        expired_token = await token_in_blacklist(token_details["jti"])
-        if expired_token:
+        jti = token_details.get("jti")
+
+        if jti and await token_in_blacklist(jti):
             raise exceptions.TokenInBlacklist()
-        if datetime.fromtimestamp(token_details["exp"]) > datetime.now(timezone.utc):
+        exp_dt = datetime.fromtimestamp(token_details["exp"], tz=timezone.utc)
+        now_dt = datetime.now(timezone.utc)
+        if exp_dt > now_dt:
             new_access_token = create_access_token(subject=token_details["sub"])
             new_refresh_token = create_access_token(
                 subject=token_details["sub"],
                 refresh=True,
                 expiry=timedelta(days=REFRESH_TOKEN_EXPIRY),
             )
-            await add_jti_to_blacklist(token_details["jti"])
+            if token_details.get("jti"):
+                await add_jti_to_blacklist(token_details["jti"])
             return {
                 "new_access_token": new_access_token,
                 "new_refresh_token": new_refresh_token,
@@ -84,5 +88,6 @@ class AuthService:
         token_details = decode_token(token)
         jti = token_details["jti"]
         await add_jti_to_blacklist(jti)
+
 
 auth_service = AuthService()

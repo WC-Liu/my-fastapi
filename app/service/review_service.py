@@ -1,9 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import status
 from fastapi.exceptions import HTTPException
-from sqlalchemy.orm import selectinload
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -19,7 +17,7 @@ class ReviewService:
         self, movie_uid: UUID, session: AsyncSession
     ) -> List[Review]:
         await movie_service.get_movie(movie_uid, session)
-        stmt = select(Review)
+        stmt = select(Review).where(Review.movie_id == movie_uid)
         results = await session.exec(stmt)
         reviews = results.all()
         if reviews is None:

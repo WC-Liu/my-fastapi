@@ -18,9 +18,8 @@ from ..schemas.movie import MovieCreate, MovieOutput, MovieReviewOutPut, MovieUp
 router = APIRouter()
 
 
-# 获取所有电影
 @router.get(
-    "/",
+    "",
     response_model=ApiResponse[List[MovieReviewOutPut]],
     dependencies=[Depends(get_current_user)],
 )
@@ -29,7 +28,6 @@ async def get_movies(session: SessionDep) -> ApiResponse[List[MovieReviewOutPut]
     return ApiResponse(data=movies)
 
 
-# 获取某部电影
 @router.get(
     "/{movie_uid}",
     response_model=ApiResponse[MovieReviewOutPut],
@@ -42,9 +40,8 @@ async def get_movie(
     return ApiResponse(data=movie)
 
 
-# 创建电影
 @router.post(
-    "/",
+    "",
     response_model=ApiResponse[MovieOutput],
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(get_current_active_superuser)],
@@ -56,7 +53,6 @@ async def create_movie(
     return ApiResponse(data=movie)
 
 
-# 更新电影信息
 @router.patch(
     "/{movie_uid}",
     response_model=ApiResponse[MovieOutput],
@@ -69,7 +65,6 @@ async def update_movie(
     return ApiResponse(data=movie)
 
 
-# 删除电影
 @router.delete(
     "/{movie_uid}",
     status_code=status.HTTP_204_NO_CONTENT,

@@ -19,7 +19,6 @@ async def add_review_to_movies(
     current_user: CurrentUser,
     session: SessionDep,
 ) -> ApiResponse[Review]:
-    print("调试信息")
     new_review = await review_service.add_review_to_movie(
         user_email=current_user.email,
         movie_uid=movie_uid,

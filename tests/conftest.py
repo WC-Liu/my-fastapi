@@ -9,6 +9,7 @@ from app.db.db import get_session
 from app.main import app
 from app.models.models import User
 
+
 @pytest.fixture
 def mock_db_session():
     """mock 数据库会话，替换 get_session 依赖"""
@@ -19,6 +20,7 @@ def mock_db_session():
     session.exec.return_value = mock_result
 
     return session
+
 
 @pytest_asyncio.fixture
 def mock_user():
@@ -31,13 +33,15 @@ def mock_user():
         is_active=True,
         is_superuser=False,
     )
+
+
 @pytest_asyncio.fixture
 async def async_client(mock_db_session):
     """异步 HTTP 客户端，注入 mock 数据库会话"""
 
     async def override_get_session():
         yield mock_db_session
-    
+
     app.dependency_overrides[get_session] = override_get_session
 
     transport = ASGITransport(app=app)
@@ -45,19 +49,24 @@ async def async_client(mock_db_session):
         yield client
     app.dependency_overrides.clear()
 
+
 @pytest_asyncio.fixture
 async def authed_client(mock_db_session, mock_user):
     """已登录用户的异步 HTTP 客户端"""
+
     async def override_get_session():
         yield mock_db_session
+
     async def override_get_current_user():
         yield mock_user
+
     app.dependency_overrides[get_session] = override_get_session
     app.dependency_overrides[get_current_user] = override_get_current_user
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://localhost") as client:
         yield client
     app.dependency_overrides.clear()
+
 
 @pytest_asyncio.fixture
 async def superuser_client(mock_db_session, mock_user):
@@ -70,12 +79,17 @@ async def superuser_client(mock_db_session, mock_user):
         is_active=True,
         is_superuser=True,
     )
+
     async def override_get_session():
         yield mock_db_session
+
     async def override_get_current_active_superuser():
         yield superuser
+
     app.dependency_overrides[get_session] = override_get_session
-    app.dependency_overrides[get_current_active_superuser] = override_get_current_active_superuser
+    app.dependency_overrides[get_current_active_superuser] = (
+        override_get_current_active_superuser
+    )
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://localhost") as client:
         yield client

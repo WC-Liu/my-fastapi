@@ -31,7 +31,7 @@ REVIEW_DATA = {"rating": 9.0, "review_text": "Awesome!"}
 class TestAddReview:
     async def test_add_review_success(self, authed_client):
         mock_review = _make_review(rating=9.0, review_text="Awesome!")
-        #MOVIE_UID = mock_review.movie_id
+        # MOVIE_UID = mock_review.movie_id
         with patch(
             "app.routers.reviews.review_service.add_review_to_movie",
             new=AsyncMock(return_value=mock_review),
@@ -71,9 +71,7 @@ class TestGetReviews:
             "app.routers.reviews.review_service.get_movie_all_reviews",
             new=AsyncMock(return_value=mock_reviews),
         ):
-            resp = await authed_client.get(
-                f"{reviews_prefix}/{MOVIE_UID}/reviews"
-            )
+            resp = await authed_client.get(f"{reviews_prefix}/{MOVIE_UID}/reviews")
 
         assert resp.status_code == 200
         body = resp.json()
@@ -81,9 +79,7 @@ class TestGetReviews:
         assert body["data"][0]["review_text"] == "Good"
 
     async def test_get_reviews_unauthenticated(self, async_client):
-        resp = await async_client.get(
-            f"{reviews_prefix}/{MOVIE_UID}/reviews"
-        )
+        resp = await async_client.get(f"{reviews_prefix}/{MOVIE_UID}/reviews")
         assert resp.status_code == 401
 
 

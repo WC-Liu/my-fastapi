@@ -76,9 +76,7 @@ class TestGetUser:
             "app.routers.users.user_service.get_user_by_user_uid",
             side_effect=exceptions.UserNotFoundError,
         ):
-            resp = await superuser_client.get(
-                f"{users_prefix}/{uuid.uuid4()}"
-            )
+            resp = await superuser_client.get(f"{users_prefix}/{uuid.uuid4()}")
 
         assert resp.status_code == 404
 
@@ -112,16 +110,12 @@ class TestDeleteUser:
             "app.routers.users.user_service.delete_user",
             new=AsyncMock(),
         ):
-            resp = await superuser_client.delete(
-                f"{users_prefix}/{uuid.uuid4()}"
-            )
+            resp = await superuser_client.delete(f"{users_prefix}/{uuid.uuid4()}")
 
         assert resp.status_code == 204
 
     async def test_delete_user_as_normal_user(self, authed_client):
-        resp = await authed_client.delete(
-            f"{users_prefix}/{uuid.uuid4()}"
-        )
+        resp = await authed_client.delete(f"{users_prefix}/{uuid.uuid4()}")
         assert resp.status_code == 403
 
     async def test_delete_user_not_found(self, superuser_client):
@@ -129,8 +123,6 @@ class TestDeleteUser:
             "app.routers.users.user_service.delete_user",
             side_effect=exceptions.UserNotFoundError,
         ):
-            resp = await superuser_client.delete(
-                f"{users_prefix}/{uuid.uuid4()}"
-            )
+            resp = await superuser_client.delete(f"{users_prefix}/{uuid.uuid4()}")
 
         assert resp.status_code == 404

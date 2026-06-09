@@ -115,7 +115,7 @@ cd my-fastapi
 ```env
 DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/movies_db
 JWT_SECRET=your-secret-key
-JWT_ALGORITHMA=HS256
+JWT_ALGORITHM=HS256
 REDIS_URL=redis://localhost:6379/0
 
 # 邮件配置（用于邮箱验证和密码重置）
@@ -202,7 +202,7 @@ docker compose up -d
 | 服务 | 镜像 | 说明 |
 |------|------|------|
 | `app` | 自定义 | FastAPI 应用（:8000） |
-| `db` | postgres:16-alpine | PostgreSQL 数据库 |
+| `db` | pgvector/pgvector:pg16 | PostgreSQL 数据库 |
 | `redis` | redis:7-alpine | Redis 缓存 |
 | `celery-worker` | 自定义 | Celery 异步任务 worker |
 

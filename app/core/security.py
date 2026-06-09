@@ -8,6 +8,9 @@ from itsdangerous import URLSafeTimedSerializer
 from pwdlib import PasswordHash
 
 from .config import settings
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 passwd_context = PasswordHash.recommended()
 ACCESS_TOKEN_EXPIRY = 1
@@ -49,10 +52,10 @@ def decode_token(token: str) -> dict:
         )
         return token_data
     except jwt.ExpiredSignatureError:
-        logging.warning("token 已经过期")
+        logger.warning("token 已经过期")
         return None
     except jwt.InvalidTokenError as e:
-        logging.warning(f"错误的token：{e}")
+        logger.warning(f"错误的token：{e}")
         return None
 
 
@@ -72,4 +75,4 @@ def decode_url_safe_token(token: str) -> dict:
         token_data = serializer.loads(token)
         return token_data
     except Exception as e:
-        logging.error(str(e))
+        logger.error(str(e))

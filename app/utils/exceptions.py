@@ -55,7 +55,7 @@ class PermissionDeniedError(Exception):
     pass
 
 
-class AccountNotActived(Exception):
+class AccountNotActivated(Exception):
     pass
 
 
@@ -94,7 +94,7 @@ def register_exception_handler(app: FastAPI):
         TokenExpiredError: (401, "登录已过期，请重新登录"),
         InvalidTokenError: (401, "token错误或者已过期"),
         PermissionDeniedError: (403, "权限不足，非管理员"),
-        AccountNotActived: (403, "该账户未被激活"),
+        AccountNotActivated: (403, "该账户未被激活"),
         AccessTokenRequired: (401, "请提供一个token"),
         RefreshTokenRequired: (401, "请提供一个刷新token"),
         MovieNotFoundError: (404, "电影不存在"),

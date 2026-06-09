@@ -38,7 +38,7 @@ class UserService:
         user = await self.get_user_by_user_uid(user_uid, session)
         for key, value in user_update.model_dump(exclude_unset=True).items():
             setattr(user, key, value)
-            await session.commit()
+        await session.commit()
         return user
 
     async def delete_user(self, user_uid: UUID, session: AsyncSession) -> None:

@@ -7,13 +7,17 @@ from .routers import auth, movies, users, reviews
 from .schemas.auth import ApiResponse
 from .utils.exceptions import register_exception_handler
 from .utils.middleware import register_middleware
+from .core.logger import get_logger, setup_logging
+
+setup_logging()
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
 async def life_span(app: FastAPI):
-    print("应用程序启动")
+    logger.info("🚀 应用程序启动中... ")
     yield
-    print("应用程序结束")
+    logger.info("🏁 应用程序已关闭")
 
 
 app = FastAPI(lifespan=life_span)
@@ -28,6 +32,8 @@ async def http_exception_handler(request: Request, exc: HTTPException):
             code=exc.status_code, message=str(exc.detail), data=None
         ).model_dump(),
     )
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     errors = exc.errors()
@@ -35,11 +41,10 @@ async def validation_exception_handler(request, exc):
     return JSONResponse(
         status_code=422,
         content=ApiResponse(
-            code=422,
-            message=f"请求参数校验失败: {message}",
-            data=None
-        ).model_dump()
+            code=422, message=f"请求参数校验失败: {message}", data=None
+        ).model_dump(),
     )
+
 
 # 自定义异常处理
 register_exception_handler(app)

@@ -9,6 +9,7 @@ pytestmark = pytest.mark.asyncio
 
 movies_prefix = "/api/v1/movies/"
 
+
 def _build_mock_movie(**override) -> Movie:
     import uuid
     from datetime import datetime, timezone
@@ -28,6 +29,7 @@ def _build_mock_movie(**override) -> Movie:
     data.update(override)
     return Movie(**data)
 
+
 MOVIE_CREATE_DATA = {
     "title": "New Movie",
     "director": "New Director",
@@ -43,25 +45,27 @@ MOVIE_UPDATE_DATA = {
     "rating": 7.5,
 }
 
+
 class TestGetMovies:
     async def test_get_movies_success(self, authed_client):
         mock_movies = [_build_mock_movie(), _build_mock_movie()]
 
         with patch(
             "app.routers.movies.movie_service.get_all_movies",
-            new=AsyncMock(return_value=mock_movies)
+            new=AsyncMock(return_value=mock_movies),
         ):
             resp = await authed_client.get(movies_prefix)
-        
+
         assert resp.status_code == 200
         body = resp.json()
         assert body["code"] == 200
-        assert len(body["data"]) == 2 
+        assert len(body["data"]) == 2
 
     async def test_get_movies_unauthenticated(self, async_client):
         resp = await async_client.get(movies_prefix)
         assert resp.status_code == 401
-    
+
+
 class TestGetMovie:
     async def test_get_movie_success(self, authed_client):
         mock_movie = _build_mock_movie()
@@ -70,8 +74,10 @@ class TestGetMovie:
             "app.routers.movies.movie_service.get_movie",
             new=AsyncMock(return_value=mock_movie),
         ):
-            resp = await authed_client.get(f"{movies_prefix}00000000-0000-0000-0000-000000000000")
-        
+            resp = await authed_client.get(
+                f"{movies_prefix}00000000-0000-0000-0000-000000000000"
+            )
+
         assert resp.status_code == 200
         body = resp.json()
         assert body["code"] == 200
@@ -87,6 +93,7 @@ class TestGetMovie:
             )
 
         assert resp.status_code == 404
+
 
 class TestCreateMovie:
     async def test_create_movie_as_superuser(self, superuser_client):
@@ -129,6 +136,7 @@ class TestCreateMovie:
             },
         )
         assert resp.status_code == 422
+
 
 class TestUpdateMovie:
     async def test_update_movie_as_superuser(self, superuser_client):
