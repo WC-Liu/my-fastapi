@@ -1,15 +1,12 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, status
-from fastapi.exceptions import HTTPException
 
 from app.core.dependencies import (
-    CurrentUser,
     SessionDep,
     get_current_active_superuser,
     get_current_user,
 )
-from app.models.models import Movie
 from app.service.movie_service import movie_service
 
 from ..schemas.auth import ApiResponse

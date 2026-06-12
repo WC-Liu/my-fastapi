@@ -62,14 +62,17 @@ class MailService:
         if passwords.new_password != passwords.confirm:
             raise exceptions.PasswordNotMatch()
         token_data = decode_url_safe_token(email_token)
+        if not token_data:
+            raise exceptions.InvalidTokenError()
         user_uid = token_data.get("sub")
-        if user_uid:
-            user = await user_service.get_user_by_user_uid(user_uid, session)
-            if not user:
-                raise exceptions.UserNotFoundError()
-            new_password_hash = generate_passwd_hash(passwords.new_password)
-            user.password_hashed = new_password_hash
-            await session.commit()
+        if not user_uid:
+            raise exceptions.InvalidTokenError()
+        user = await user_service.get_user_by_user_uid(user_uid, session)
+        if not user:
+            raise exceptions.UserNotFoundError()
+        new_password_hash = generate_passwd_hash(passwords.new_password)
+        user.password_hashed = new_password_hash
+        await session.commit()
 
 
 mail_service = MailService()

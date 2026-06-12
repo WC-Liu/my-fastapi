@@ -1,12 +1,12 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import Depends, status, APIRouter
+from fastapi import APIRouter, Depends, status
 
 from app.core.dependencies import CurrentUser, SessionDep, get_current_user
 from app.models.models import Review
 from app.schemas.auth import ApiResponse
-from app.schemas.review import ReviewCreate, ReviewOutput
+from app.schemas.review import ReviewCreate
 from app.service.review_service import review_service
 
 router = APIRouter()

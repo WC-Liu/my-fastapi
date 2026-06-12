@@ -25,7 +25,7 @@ class User(SQLModel, table=True):
     updated_at: datetime | None = Field(
         default_factory=get_datetime_utc, sa_type=DateTime(timezone=True)
     )
-    reviews: List["Review"] = Relationship(
+    reviews: list["Review"] = Relationship(
         back_populates="user", sa_relationship_kwargs={"lazy": "selectin"}
     )
 
@@ -44,7 +44,7 @@ class Movie(SQLModel, table=True):
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc, sa_type=DateTime(timezone=True)
     )
-    reviews: List["Review"] = Relationship(
+    reviews: list["Review"] = Relationship(
         back_populates="movie", sa_relationship_kwargs={"lazy": "selectin"}
     )
 
@@ -55,13 +55,13 @@ class Review(SQLModel, table=True):
     uid: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     rating: float = Field(ge=0, le=10)
     review_text: str
-    user_id: Optional[uuid.UUID] = Field(default=None, foreign_key="users.uid")
-    movie_id: Optional[uuid.UUID] = Field(default=None, foreign_key="movies.uid")
+    user_id: uuid.UUID | None = Field(default=None, foreign_key="users.uid")
+    movie_id: uuid.UUID | None = Field(default=None, foreign_key="movies.uid")
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc, sa_type=DateTime(timezone=True)
     )
-    user: Optional["User"] = Relationship(back_populates="reviews")
-    movie: Optional["Movie"] = Relationship(back_populates="reviews")
+    user: User | None = Relationship(back_populates="reviews")
+    movie: Movie | None = Relationship(back_populates="reviews")
 
 
 @event.listens_for(User, "before_update")

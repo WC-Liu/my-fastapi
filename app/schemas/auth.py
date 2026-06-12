@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Any, Generic, List, Optional, TypeVar
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -55,4 +55,4 @@ class PasswordResetConfirm(BaseModel):
 class ApiResponse(BaseModel, Generic[T]):
     code: int = 200
     message: str = "ok"
-    data: Optional[T] = None
+    data: T | None = None

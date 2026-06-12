@@ -1,17 +1,16 @@
 from typing import List
 from uuid import UUID
 
-from sqlalchemy.orm import selectinload
 from sqlmodel import desc, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models.models import Movie, User
+from app.models.models import User
 from app.schemas.auth import UserUpdate
 from app.utils import exceptions
 
 
 class UserService:
-    async def get_all_users(self, session: AsyncSession) -> List[Movie]:
+    async def get_all_users(self, session: AsyncSession) -> List[User]:
         stmt = select(User).order_by(desc(User.created_at))
         result = await session.exec(stmt)
         return result.all()

@@ -86,8 +86,9 @@ class AuthService:
 
     async def logout_user(self, token: str) -> None:
         token_details = decode_token(token)
-        jti = token_details["jti"]
-        await add_jti_to_blacklist(jti)
+        if token_details is None or "jti" not in token_details:
+            raise exceptions.InvalidTokenError()
+        await add_jti_to_blacklist(token_details["jti"])
 
 
 auth_service = AuthService()

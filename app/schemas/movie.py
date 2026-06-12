@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -20,12 +19,12 @@ class MovieCreate(BaseModel):
 
 # 更新请求
 class MovieUpdate(BaseModel):
-    title: Optional[str] = None
-    director: Optional[str] = None
-    year: Optional[int] = None
-    rating: Optional[float] = Field(None, ge=0, le=10)
-    genre: Optional[str] = None
-    is_showing: Optional[bool] = False
+    title: str | None= None
+    director: str | None = None
+    year: int | None= None
+    rating: float | None = Field(None, ge=0, le=10)
+    genre: str | None = None
+    is_showing: bool | None = None
 
 
 # 响应模型
@@ -42,4 +41,4 @@ class MovieOutput(BaseModel):
 
 
 class MovieReviewOutPut(MovieOutput):
-    reviews: List[ReviewOutput]
+    reviews: list[ReviewOutput]

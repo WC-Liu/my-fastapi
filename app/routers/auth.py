@@ -10,8 +10,6 @@ from app.core.dependencies import (
     TokenDep,
     get_current_user,
 )
-from app.core.security import decode_token
-from app.db.redis import add_jti_to_blacklist
 from app.models.models import User
 from app.schemas.auth import (
     ApiResponse,

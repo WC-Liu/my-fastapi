@@ -7,7 +7,7 @@ from app.utils import exceptions
 
 pytestmark = pytest.mark.asyncio
 
-movies_prefix = "/api/v1/movies/"
+movies_prefix = "/api/v1/movies"
 
 
 def _build_mock_movie(**override) -> Movie:
@@ -75,7 +75,7 @@ class TestGetMovie:
             new=AsyncMock(return_value=mock_movie),
         ):
             resp = await authed_client.get(
-                f"{movies_prefix}00000000-0000-0000-0000-000000000000"
+                f"{movies_prefix}/00000000-0000-0000-0000-000000000000"
             )
 
         assert resp.status_code == 200
@@ -89,7 +89,7 @@ class TestGetMovie:
             side_effect=exceptions.MovieNotFoundError,
         ):
             resp = await authed_client.get(
-                f"{movies_prefix}00000000-0000-0000-0000-000000000000"
+                f"{movies_prefix}/00000000-0000-0000-0000-000000000000"
             )
 
         assert resp.status_code == 404
@@ -147,7 +147,7 @@ class TestUpdateMovie:
             new=AsyncMock(return_value=mock_movie),
         ):
             resp = await superuser_client.patch(
-                f"{movies_prefix}00000000-0000-0000-0000-000000000000",
+                f"{movies_prefix}/00000000-0000-0000-0000-000000000000",
                 json=MOVIE_UPDATE_DATA,
             )
 
@@ -158,7 +158,7 @@ class TestUpdateMovie:
 
     async def test_update_movie_as_normal_user(self, authed_client):
         resp = await authed_client.patch(
-            f"{movies_prefix}00000000-0000-0000-0000-000000000000",
+            f"{movies_prefix}/00000000-0000-0000-0000-000000000000",
             json=MOVIE_UPDATE_DATA,
         )
         assert resp.status_code == 403
@@ -169,7 +169,7 @@ class TestUpdateMovie:
             side_effect=exceptions.MovieNotFoundError,
         ):
             resp = await superuser_client.patch(
-                f"{movies_prefix}00000000-0000-0000-0000-000000000000",
+                f"{movies_prefix}/00000000-0000-0000-0000-000000000000",
                 json=MOVIE_UPDATE_DATA,
             )
 
@@ -183,14 +183,14 @@ class TestDeleteMovie:
             new=AsyncMock(),
         ):
             resp = await superuser_client.delete(
-                f"{movies_prefix}00000000-0000-0000-0000-000000000000"
+                f"{movies_prefix}/00000000-0000-0000-0000-000000000000"
             )
 
         assert resp.status_code == 204
 
     async def test_delete_movie_as_normal_user(self, authed_client):
         resp = await authed_client.delete(
-            f"{movies_prefix}00000000-0000-0000-0000-000000000000"
+            f"{movies_prefix}/00000000-0000-0000-0000-000000000000"
         )
         assert resp.status_code == 403
 
@@ -200,7 +200,7 @@ class TestDeleteMovie:
             side_effect=exceptions.MovieNotFoundError,
         ):
             resp = await superuser_client.delete(
-                f"{movies_prefix}00000000-0000-0000-0000-000000000000"
+                f"{movies_prefix}/00000000-0000-0000-0000-000000000000"
             )
 
         assert resp.status_code == 404

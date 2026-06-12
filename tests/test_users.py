@@ -47,9 +47,10 @@ class TestGetUsers:
 
         assert resp.status_code == 200
         body = resp.json()
-        assert len(body) == 2
-        assert body[0]["username"] == "alice"
-        assert body[1]["username"] == "admin"
+        assert body["code"] == 200
+        assert len(body["data"]) == 2
+        assert body["data"][0]["username"] == "alice"
+        assert body["data"][1]["username"] == "admin"
 
     async def test_get_users_as_normal_user(self, authed_client):
         resp = await authed_client.get(f"{users_prefix}/")
@@ -68,8 +69,9 @@ class TestGetUser:
 
         assert resp.status_code == 200
         body = resp.json()
-        assert body["username"] == "alice"
-        assert body["email"] == "alice@example.com"
+        assert body["code"] == 200
+        assert body["data"]["username"] == "alice"
+        assert body["data"]["email"] == "alice@example.com"
 
     async def test_get_user_not_found(self, superuser_client):
         with patch(
@@ -94,7 +96,7 @@ class TestUpdateUser:
                 json={"username": "updated_name"},
             )
         assert resp.status_code == 200
-        assert resp.json()["username"] == "updated_name"
+        assert resp.json()["data"]["username"] == "updated_name"
 
     async def test_update_user_as_normal_user(self, authed_client):
         resp = await authed_client.patch(

@@ -72,6 +72,10 @@ class MovieAlreadyExistsError(Exception):
     pass
 
 
+class ReviewNotFoundError(Exception):
+    pass
+
+
 class MailServiceError(Exception):
     pass
 
@@ -99,6 +103,7 @@ def register_exception_handler(app: FastAPI):
         RefreshTokenRequired: (401, "请提供一个刷新token"),
         MovieNotFoundError: (404, "电影不存在"),
         MovieAlreadyExistsError: (400, "电影已存在"),
+        ReviewNotFoundError: (404, "评论不存在"),
         MailServiceError: (500, "邮件发送失败"),
         TokenInBlacklist: (400, "token在黑名单中"),
         PasswordNotMatch: (400, "两次输入密码不一致"),

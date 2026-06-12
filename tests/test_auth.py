@@ -135,7 +135,7 @@ class TestRefreshToken:
 class TestVerifyEmail:
     async def test_verify_email_success(self, async_client):
         with patch(
-            "app.routers.auth.mail_service.actived_user",
+            "app.routers.auth.mail_service.activated_user",
             new=AsyncMock(),
         ):
             resp = await async_client.get(f"{auth_prefix}/verify/some-email-token")

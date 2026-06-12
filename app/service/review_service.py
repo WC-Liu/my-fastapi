@@ -1,7 +1,6 @@
 from typing import List
 from uuid import UUID
 
-from fastapi.exceptions import HTTPException
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -20,8 +19,8 @@ class ReviewService:
         stmt = select(Review).where(Review.movie_id == movie_uid)
         results = await session.exec(stmt)
         reviews = results.all()
-        if reviews is None:
-            raise HTTPException(status_code=404, detail="不存在")
+        if not reviews:
+            raise exceptions.ReviewNotFoundError()
         return reviews
 
     async def add_review_to_movie(
@@ -46,11 +45,11 @@ class ReviewService:
         result = await session.exec(stmt)
         review = result.first()
         if review is None:
-            raise HTTPException(status_code=404, detail="不存在")
+            raise exceptions.ReviewNotFoundError()
         return review
 
     async def delete_user_review(
-        self, user_uid: UUID, movie_uid: UUID, review_uid: str, session: AsyncSession
+        self, user_uid: UUID, movie_uid: UUID, review_uid: UUID, session: AsyncSession
     ) -> None:
         await user_service.get_user_by_user_uid(user_uid, session)
         await movie_service.get_movie(movie_uid, session)

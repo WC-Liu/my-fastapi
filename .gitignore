@@ -14,3 +14,4 @@ wheels/
 .hypothesis
 .pytest_cache
 .trae
+.mimocode
